@@ -17,25 +17,22 @@ HANDLER = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 with open("token.txt", "r") as file:
     TOKEN = file.read()
 
+OWNER_USERIDS = [461084048337403915]
+NOT_OWNER_MESSAGE = "thy are not the one that shaped me"
+
+# bot variables
+activity = discord.Activity(name="over all", type=discord.ActivityType.watching)
+# Setting up Discord Bot Manager Class and Command Handler
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), activity=activity)
+
 # data gets stored in json so should be used for settings
-data = {
+bot.data = {
     "joinRole": 1171095238929039360,
     "webtoons": ["https://www.webtoons.com/en/thriller/school-bus-graveyard/list?title_no=2705"],
     "reactionRoles": {}, # {'1171563367467585697': {'1172600729261846639': {'🔫': <Role id=1054483148903284846 name='membruh (guest)'>}}}
     "wordEmojis": {"cheese": "🧀"},
 }
 
-# Misc variables
-OWNER_USERIDS = [461084048337403915]
-NOT_OWNER_MESSAGE = "thy are not the one that shaped me"
-activity = discord.Activity(name="over all", type=discord.ActivityType.watching)
-
-#groups
-test_group = Group(name='test', description='description')
-
-
-# Setting up Discord Bot Manager Class and Command Handler
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), activity=activity)
 
 # cog loading (gets called just before bot.run)
 async def load_cogs():
@@ -44,8 +41,8 @@ async def load_cogs():
             await bot.load_extension(f"cogs.{filename[:-3]}")
 
 # json write
-def write_json_data(data:dict):
-    data_json = json.dumps(data)
+def write_json_data():
+    data_json = json.dumps(bot.data)
     with open("data.json", "w") as file:
         file.write(data_json)
 
@@ -59,27 +56,27 @@ def read_json_data():
     return data
 
 # update data
-def update_data(data:dict):
+def update_data():
     data_json = read_json_data()
     for key in data_json:
-        data[key] = data_json[key]
-
-    return data
+        bot.data[key] = data_json[key]
 
 # remove oudated vars in data.json
-def remove_outdated_data(data:dict):
+def remove_outdated_data():
     data_json = read_json_data()
     for key in list(data_json):
-        if not key in data:
+        if not key in bot.data:
             del data_json[key]
     
-    write_json_data(data_json)
+    data_json = json.dumps(data_json)
+    with open("data.json", "w") as file:
+        file.write(data_json)
 
 #sets the data to the data in the data.json
 if os.path.isfile("./data.json"):
-    remove_outdated_data(data)
-    data = update_data(data)
-write_json_data(data)
+    remove_outdated_data()
+    update_data()
+write_json_data()
 
 
 # Define a simple View that gives us a confirmation menu
@@ -138,7 +135,7 @@ class Dropdown(discord.ui.Select):
 
 class JoinRoleDropdown(discord.ui.RoleSelect):
     def __init__(self):
-        role = data["joinRole"] # TODO this needs to get the role so it doesnt just say the role id but i have no idea how and im going insane
+        role = bot.data["joinRole"] # TODO this needs to get the role so it doesnt just say the role id but i have no idea how and im going insane
         super().__init__(placeholder=f"Join Role: {role}", min_values=1, max_values=1)
         
     async def callback(self, interaction: discord.Interaction) -> Any:
@@ -185,7 +182,7 @@ async def shutdown(ctx):
     if ctx.author.id in OWNER_USERIDS:
         print("Shutting Down from command")
         await ctx.send("Shutting Down")
-        write_json_data(data)
+        write_json_data()
         await bot.close()
     else:
         await ctx.send(NOT_OWNER_MESSAGE)
@@ -204,15 +201,15 @@ async def on_message(message:discord.Message):
 
     #checks if its not the bot that send it
     if message.author != bot.user:
-        for key in data["wordEmojis"]:
+        for key in bot.data["wordEmojis"]:
             if key in message.content.lower():
-                await message.add_reaction(data["wordEmojis"][key])
+                await message.add_reaction(bot.data["wordEmojis"][key])
 
  
 # on member join
 @bot.event
 async def on_member_join(member): #discord.Member
-    role = member.guild.get_role(data["joinRole"])
+    role = member.guild.get_role(bot.data["joinRole"])
     await member.add_roles(role, reason="Joined guild")
 
 # on raw reaction add
@@ -222,12 +219,12 @@ async def on_raw_reaction_add(payload):
     if payload.user_id != bot.user.id:
         # reaction role add
         channel_id = str(payload.channel_id)
-        if channel_id in data["reactionRoles"]:
+        if channel_id in bot.data["reactionRoles"]:
             message_id = str(payload.message_id) 
-            if message_id in data["reactionRoles"][channel_id]:
-                if payload.emoji.name in data["reactionRoles"][channel_id][message_id]:
+            if message_id in bot.data["reactionRoles"][channel_id]:
+                if payload.emoji.name in bot.data["reactionRoles"][channel_id][message_id]:
                     guild = bot.get_guild(payload.guild_id)
-                    await guild.get_member(payload.user_id).add_roles(guild.get_role(data["reactionRoles"][channel_id][message_id][payload.emoji.name]), reason="ReactionRole")
+                    await guild.get_member(payload.user_id).add_roles(guild.get_role(bot.data["reactionRoles"][channel_id][message_id][payload.emoji.name]), reason="ReactionRole")
 
 # on raw reaction remove
 @bot.event
@@ -236,12 +233,12 @@ async def on_raw_reaction_remove(payload):
     if payload.user_id != bot.user.id:
         #reaction role remove
         channel_id = str(payload.channel_id)
-        if channel_id in data["reactionRoles"]:
+        if channel_id in bot.data["reactionRoles"]:
             message_id = str(payload.message_id) 
-            if message_id in data["reactionRoles"][channel_id]:
-                if payload.emoji.name in data["reactionRoles"][channel_id][message_id]:
+            if message_id in bot.data["reactionRoles"][channel_id]:
+                if payload.emoji.name in bot.data["reactionRoles"][channel_id][message_id]:
                     guild = bot.get_guild(payload.guild_id)
-                    await guild.get_member(payload.user_id).remove_roles(guild.get_role(data["reactionRoles"][channel_id][message_id][payload.emoji.name]), reason="ReactionRole")
+                    await guild.get_member(payload.user_id).remove_roles(guild.get_role(bot.data["reactionRoles"][channel_id][message_id][payload.emoji.name]), reason="ReactionRole")
 
 
 # /COMMANDS
@@ -253,7 +250,7 @@ async def test_command(interaction: discord.Interaction):
 # webtoon 
 @bot.tree.command(name="webtoon", description="sends you a webtoon recommendation THAT YOU SHALL READ")
 async def webtoon(interaction: discord.Interaction):
-    randomWebtoon = random.choice(data["webtoons"])
+    randomWebtoon = random.choice(bot.data["webtoons"])
     await interaction.response.send_message(f"I think you should read {randomWebtoon} but I exist in every instance of time so I do not know what you have read",ephemeral=True)
 
 
@@ -261,11 +258,11 @@ async def webtoon(interaction: discord.Interaction):
 @bot.tree.command(name="recommand_webtoon", description="sends you a webtoon recommendation THAT YOU SHALL READ")
 async def recommand_webtoon(interaction: discord.Interaction, webtoon: str):
     if webtoon.startswith("https://www.webtoons.com/en/") and "list?title_no" in webtoon:
-        if webtoon in data["webtoons"]:
+        if webtoon in bot.data["webtoons"]:
             await interaction.response.send_message("I already know this!",ephemeral=True)
         else:
-            data["webtoons"].append(webtoon)
-            write_json_data(data)
+            bot.data["webtoons"].append(webtoon)
+            write_json_data()
             await interaction.response.send_message(f"{webtoon} has been added to my infinite knowledge",ephemeral=True)
     else:
         await interaction.response.send_message("Thats not a webtoon you befoon (also make sure that it isnt a link to a chapter!))",ephemeral=True)
@@ -310,57 +307,42 @@ async def reaction_role_add(interaction:discord.Interaction, channel: discord.Te
     message = await channel.fetch_message(int(message_id))
     await message.add_reaction(emoji)
 
-    if str(channel.id) not in data["reactionRoles"]:
-        data["reactionRoles"][str(channel.id)] = {}
+    if str(channel.id) not in bot.data["reactionRoles"]:
+        bot.data["reactionRoles"][str(channel.id)] = {}
 
-    if message_id not in data["reactionRoles"][str(channel.id)]:
-        data["reactionRoles"][str(channel.id)][message_id] = {}
+    if message_id not in bot.data["reactionRoles"][str(channel.id)]:
+        bot.data["reactionRoles"][str(channel.id)][message_id] = {}
 
-    data["reactionRoles"][str(channel.id)][message_id][emoji] = role.id
+    bot.data["reactionRoles"][str(channel.id)][message_id][emoji] = role.id
     await interaction.response.send_message(f"channel: {channel}, message_id: {message_id}, emoji: {emoji} with role: @{role} has been ADDED", ephemeral=True)
-    print(data["reactionRoles"])
-    write_json_data(data)
+    print(bot.data["reactionRoles"])
+    write_json_data()
 
 # reaction role remove
 @bot.tree.command(name="reaction_role_remove", description="remove a reaction role")
 @app_commands.checks.has_permissions(administrator=True)
 async def reaction_role_remove(interaction:discord.Interaction, channel: discord.TextChannel, message_id: str, emoji: str):
     message = await channel.fetch_message(int(message_id))
-    role = data["reactionRoles"][str(channel.id)][message_id][emoji]
+    role = bot.data["reactionRoles"][str(channel.id)][message_id][emoji]
     await message.clear_reaction(emoji)
 
-    del data["reactionRoles"][str(channel.id)][message_id][emoji]
+    del bot.data["reactionRoles"][str(channel.id)][message_id][emoji]
 
-    if not data["reactionRoles"][str(channel.id)][message_id]:
-        del data["reactionRoles"][str(channel.id)][message_id]
+    if not bot.data["reactionRoles"][str(channel.id)][message_id]:
+        del bot.data["reactionRoles"][str(channel.id)][message_id]
     
-    if not data["reactionRoles"][str(channel.id)]:
-        del data["reactionRoles"][str(channel.id)]
+    if not bot.data["reactionRoles"][str(channel.id)]:
+        del bot.data["reactionRoles"][str(channel.id)]
 
     await interaction.response.send_message(f"channel: {channel}, message_id: {message_id}, emoji: {emoji} with role: {role} has been REMOVED", ephemeral=True)
-    write_json_data(data)
+    write_json_data()
 
 # reaction role list
 @bot.tree.command(name="reaction_role_list", description="lists the reaction roles (needs work)")
 @app_commands.checks.has_permissions(administrator=True)
 async def reaction_role_list(interaction:discord.Interaction):
-    reaction_roles = data["reactionRoles"]
+    reaction_roles = bot.data["reactionRoles"]
     await interaction.response.send_message(f"{reaction_roles}", ephemeral=True)
-
-# word Emojis add
-@bot.tree.command(name="word_emoji", description="make the bot react with a emoji on a word")
-async def word_emoji(interaction:discord.Interaction, word:str, emoji:str):
-    word = word.lower()
-    await interaction.response.send_message(f"{emoji} will get added on word: {word}")
-    data["wordEmojis"][word] = emoji
-    write_json_data(data)
-
-#this doesnt work
-# @test_group.command(name="test1", description="testlaalalala")
-# async def subcommand(interaction:discord.Interaction):
-#     await interaction.response.send_message("test") 
-
-
 
 
 
@@ -370,22 +352,22 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 
 # to do:
+#-COGS / EXTENTIONS MOVE
 # switch from client to bot? (idk if this is needed need to look into it more) DONE
 # switch the sync commands from on message to how you would normaly with a bot DONE
 # cog or extentions? DONE
+# move commands to cogs
 # command groups????
 
-# add a settings menu thats just a lot of drop downs????
 
-# beter way of blocking commands for people who dont have the permission (it should send a msg)
+
+#good error msgs for when you dont have the perms
+
+# add a settings menu thats just a lot of drop downs????
 
 
 
 # event helper??? (like discord EVENTS the button at the top of all the channels)
 
-# admin commands to mulpiled data???
-# a admin command to shut down the bot
-# a admin command to reboot??? is that even possible???
-
-#webtoon clean up the code?
-
+# admin commands to mulpiled data??? (maybe just show)
+# a admin command to shut down the bot DONE
