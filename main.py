@@ -25,7 +25,7 @@ activity = discord.Activity(name="over all", type=discord.ActivityType.watching)
 # Setting up Discord Bot Manager Class and Command Handler
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), activity=activity)
 
-# data gets stored in json so should be used for settings
+# data gets stored in json so should be used for saved data (like settings)
 bot.data = {
     "joinRole": 1171095238929039360,
     "webtoons": ["https://www.webtoons.com/en/thriller/school-bus-graveyard/list?title_no=2705"],
@@ -242,10 +242,6 @@ async def on_raw_reaction_remove(payload):
 
 
 # /COMMANDS
-# test
-@bot.tree.command(name="test_command", description="idk some command or something")
-async def test_command(interaction: discord.Interaction):
-  await interaction.response.send_message("yes i am on you idiot")
 
 # webtoon 
 @bot.tree.command(name="webtoon", description="sends you a webtoon recommendation THAT YOU SHALL READ")
@@ -266,10 +262,6 @@ async def recommand_webtoon(interaction: discord.Interaction, webtoon: str):
             await interaction.response.send_message(f"{webtoon} has been added to my infinite knowledge",ephemeral=True)
     else:
         await interaction.response.send_message("Thats not a webtoon you befoon (also make sure that it isnt a link to a chapter!))",ephemeral=True)
-
-@bot.tree.command(name="balls", description="axe asked for this shit")
-async def balls(interaction: discord.Interaction):
-    await interaction.response.send_message(f"if you want balls just check {interaction.user} browser history")
 
 
 # set join role
@@ -364,6 +356,7 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 #good error msgs for when you dont have the perms
 
 # add a settings menu thats just a lot of drop downs????
+# help command
 
 
 
