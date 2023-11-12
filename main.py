@@ -194,13 +194,18 @@ async def shutdown(ctx):
 async def on_message(message:discord.Message):
     #needed to make bot.command() still work
     await bot.process_commands(message)
-    
+
     #checks that its not a command
     if message.content.startswith(bot.command_prefix):
-            return
+        return
+
+    #if bot mentioned
+    if bot.user.mentioned_in(message):
+        await message.author.send("what doth thee wanteth?")
 
     #checks if its not the bot that send it
     if message.author != bot.user:
+        #word emojis
         for key in bot.data["wordEmojis"]:
             if key in message.content.lower():
                 await message.add_reaction(bot.data["wordEmojis"][key])
