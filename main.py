@@ -37,6 +37,12 @@ test_group = Group(name='test', description='description')
 # Setting up Discord Bot Manager Class and Command Handler
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), activity=activity)
 
+# cog loading (gets called just before bot.run)
+async def load_cogs():
+    for filename in os.listdir("./cogs"):
+        if filename.endswith(".py"):
+            await bot.load_extension(f"cogs.{filename[:-3]}")
+
 # json write
 def write_json_data(data:dict):
     data_json = json.dumps(data)
@@ -152,21 +158,17 @@ class JoinRoleView(discord.ui.View):
         # Adds the dropdown to our view object.
         self.add_item(JoinRoleDropdown())
 
-#cog loading doesnt work
-# async def load():
-#     for filename in os.listdir("./cogs"):
-#         if filename.endswith(".py"):
-#             await client.load_extension(f"cogs.{filename[:-3]}")
 
-# async def main():
-#     await load()
-#     await client.start(TOKEN)
+
+    
 
 
 # start up message
 @bot.event
 async def on_ready():
+    print("--------------")
     print(f"{bot.user} is CONNECTED!")
+    print(f"with cogs: {bot.extensions}")
 
 
 @bot.command()
@@ -360,14 +362,17 @@ async def word_emoji(interaction:discord.Interaction, word:str, emoji:str):
 
 
 
+
+
+
+asyncio.run(load_cogs())
 bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
-# asyncio.run(main())
 
 
 # to do:
 # switch from client to bot? (idk if this is needed need to look into it more) DONE
 # switch the sync commands from on message to how you would normaly with a bot DONE
-# cog or extentions?
+# cog or extentions? DONE
 # command groups????
 
 # add a settings menu thats just a lot of drop downs????
