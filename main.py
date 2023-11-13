@@ -248,25 +248,6 @@ async def on_raw_reaction_remove(payload):
 
 # /COMMANDS
 
-# webtoon 
-@bot.tree.command(name="webtoon", description="sends you a webtoon recommendation THAT YOU SHALL READ")
-async def webtoon(interaction: discord.Interaction):
-    randomWebtoon = random.choice(bot.data["webtoons"])
-    await interaction.response.send_message(f"I think you should read {randomWebtoon} but I exist in every instance of time so I do not know what you have read",ephemeral=True)
-
-
-# recommand webtoon 
-@bot.tree.command(name="recommand_webtoon", description="sends you a webtoon recommendation THAT YOU SHALL READ")
-async def recommand_webtoon(interaction: discord.Interaction, webtoon: str):
-    if webtoon.startswith("https://www.webtoons.com/en/") and "list?title_no" in webtoon:
-        if webtoon in bot.data["webtoons"]:
-            await interaction.response.send_message("I already know this!",ephemeral=True)
-        else:
-            bot.data["webtoons"].append(webtoon)
-            write_json_data()
-            await interaction.response.send_message(f"{webtoon} has been added to my infinite knowledge",ephemeral=True)
-    else:
-        await interaction.response.send_message("Thats not a webtoon you befoon (also make sure that it isnt a link to a chapter!))",ephemeral=True)
 
 
 # set join role
@@ -356,6 +337,8 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 # move commands to cogs
 # command groups????
 
+#webtoon: add a number input for how many comics in the get command
+#webtoon: maybe clean up the code in the add?
 
 
 #good error msgs for when you dont have the perms

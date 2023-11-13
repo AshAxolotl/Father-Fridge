@@ -3,7 +3,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-class MyCog(commands.Cog):
+class Funny(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
     
@@ -13,4 +13,4 @@ class MyCog(commands.Cog):
         await interaction.response.send_message(f"if you want balls just check {interaction.user} browser history")
 
 async def setup(bot: commands.Bot) -> None:
-  await bot.add_cog(MyCog(bot))
+  await bot.add_cog(Funny(bot))
