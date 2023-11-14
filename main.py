@@ -281,36 +281,14 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 
 # to do:
-#-COGS / EXTENTIONS MOVE
-# switch from client to bot? (idk if this is needed need to look into it more) DONE
-# switch the sync commands from on message to how you would normaly with a bot DONE
-# cog or extentions? DONE
-# move commands to cogs DONE
-# command groups???? DONE
-
-#-improve commands
-#webtoon: add a number input for how many comics in the get command DONE
-#webtoon: maybe clean up the code in the add? DONE
-
-#reaction roles dont need the channel (problay) DONE
-# reaction roles clear <msg id> DONE
-
-#improve word emoji DONE
-
-#good error msgs for when you dont have the perms DONE
-
-
 
 #-needs to be added
 # add a settings menu thats just a lot of drop downs????
-# help command
+# help command done
 
 # apps (like right click and then it shows apps)
-#what are we chatting about? auto bread
 
 
 
 # event helper??? (like discord EVENTS the button at the top of all the channels)
 
-# admin commands to mulpiled data??? (maybe just show)
-# a admin command to shut down the bot DONE

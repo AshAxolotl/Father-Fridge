@@ -10,6 +10,7 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
     self.bot = bot
     super().__init__()
 
+  #word emoji add
   @app_commands.command(name="add", description="make the bot react with a emoji on a word")
   async def wmoji_add(self, interaction:discord.Interaction, word:str, emoji:str):
     word = word.lower()
@@ -24,6 +25,7 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
     else:
       await interaction.response.send_message(f"{emoji} already gets added to {word} or the word {word} already has 10 emojis", ephemeral=True)
     
+  #word emoji remove
   @app_commands.command(name="remove", description="stops the bot from reacting with a emoji on a word")
   async def wmoji_remove(self, interaction:discord.Interaction, word:str, emoji: Optional[str]):
     word = word.lower()
