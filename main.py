@@ -283,15 +283,17 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 # switch from client to bot? (idk if this is needed need to look into it more) DONE
 # switch the sync commands from on message to how you would normaly with a bot DONE
 # cog or extentions? DONE
-# move commands to cogs
-# command groups????
+# move commands to cogs DONE
+# command groups???? DONE
 
 #-improve commands
 #webtoon: add a number input for how many comics in the get command DONE
 #webtoon: maybe clean up the code in the add? DONE
 
-#reaction roles dont need the channel (problay)
-# reaction roles clear <msg id>
+#reaction roles dont need the channel (problay) DONE
+# reaction roles clear <msg id> 
+
+#improve word emoji
 
 #good error msgs for when you dont have the perms
 

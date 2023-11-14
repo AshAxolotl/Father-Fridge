@@ -2,6 +2,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import json
+from typing import Optional
+
 
 class ReactionRole(commands.GroupCog, name="reactionrole"):
     def __init__(self, bot: commands.Bot) -> None:
@@ -30,24 +32,30 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
     # reaction role remove
     @app_commands.command(name="remove", description="remove a reaction role (needs to be used in the channel the msg is in)")
     @app_commands.checks.has_permissions(administrator=True)
-    async def reaction_role_remove(self, interaction:discord.Interaction, message_id: str, emoji: str):
+    async def reaction_role_remove(self, interaction:discord.Interaction, message_id: str, emoji: Optional[str]):
         channel = interaction.channel
         message = await channel.fetch_message(int(message_id))
-        role = self.bot.data["reactionRoles"][message_id][emoji]
-        await message.clear_reaction(emoji)
+        if type(emoji) == str:
+            role = self.bot.data["reactionRoles"][message_id][emoji]
+            await message.clear_reaction(emoji)
 
-        del self.bot.data["reactionRoles"][message_id][emoji]
+            del self.bot.data["reactionRoles"][message_id][emoji]
 
-        # checks if there are no emojis (reactionroles) left in the msg
-        if self.bot.data["reactionRoles"][message_id] == {"channel": channel.id}:
+            # checks if there are no emojis (reactionroles) left in the msg
+            if self.bot.data["reactionRoles"][message_id] == {"channel": channel.id}:
+                del self.bot.data["reactionRoles"][message_id]
+
+            await interaction.response.send_message(f"channel: {channel}, message_id: {message_id}, emoji: {emoji} with role: {role} has been REMOVED", ephemeral=True)
+        else:
             del self.bot.data["reactionRoles"][message_id]
-
+            
+            await message.clear_reactions()
+            await interaction.response.send_message(f"all reactionroles on message_id: {message_id} in channel {channel} have been REMOVED", ephemeral=True)
+        
         write_json_data(self.bot.data)
-        await interaction.response.send_message(f"channel: {channel}, message_id: {message_id}, emoji: {emoji} with role: {role} has been REMOVED", ephemeral=True)
 
     # reaction role list
     @app_commands.command(name="list", description="lists the reaction roles (needs work)")
-    @app_commands.checks.has_permissions(administrator=True)
     async def reaction_role_list(self, interaction:discord.Interaction):
         text = "list of reaction roles:\n"
         for message_id in self.bot.data["reactionRoles"]:
