@@ -11,9 +11,19 @@ class WordEmoji(commands.Cog):
   @app_commands.command(name="word_emoji", description="make the bot react with a emoji on a word")
   async def word_emoji(self, interaction:discord.Interaction, word:str, emoji:str):
     word = word.lower()
-    await interaction.response.send_message(f"{emoji} will get added on word: {word}")
-    self.bot.data["wordEmojis"][word] = emoji
-    write_json_data(self.bot.data)
+
+    if word not in self.bot.data["wordEmojis"]:
+      self.bot.data["wordEmojis"][word] = []
+
+    if emoji not in self.bot.data["wordEmojis"][word] and len(self.bot.data["wordEmojis"][word]) < 10:
+      self.bot.data["wordEmojis"][word].append(emoji)
+      write_json_data(self.bot.data)
+      await interaction.response.send_message(f"{emoji} will get added on word: {word}")
+    else:
+      await interaction.response.send_message(f"{emoji} already gets added to {word} or the word {word} already has 10 emojis", ephemeral=True)
+    
+    
+    
 
 async def setup(bot: commands.Bot) -> None:
   await bot.add_cog(WordEmoji(bot))

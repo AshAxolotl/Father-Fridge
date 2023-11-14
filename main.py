@@ -209,7 +209,8 @@ async def on_message(message:discord.Message):
         #word emojis
         for key in bot.data["wordEmojis"]:
             if key in message.content.lower():
-                await message.add_reaction(bot.data["wordEmojis"][key])
+                for emoji in bot.data["wordEmojis"][key]:
+                    await message.add_reaction(emoji)
 
  
 # on member join
@@ -291,14 +292,15 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 #webtoon: maybe clean up the code in the add? DONE
 
 #reaction roles dont need the channel (problay) DONE
-# reaction roles clear <msg id> 
+# reaction roles clear <msg id> DONE
 
 #improve word emoji
 
 #good error msgs for when you dont have the perms
 
 
-#-needs to be dded
+
+#-needs to be added
 # add a settings menu thats just a lot of drop downs????
 # help command
 
