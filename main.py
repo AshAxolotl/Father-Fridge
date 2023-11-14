@@ -167,7 +167,7 @@ async def on_ready():
     print(f"{bot.user} is CONNECTED!")
     print(f"with cogs: {bot.extensions}")
 
-
+#sync commands
 @bot.command()
 async def sync_cmds(ctx):
     if ctx.author.id in OWNER_USERIDS:
@@ -177,6 +177,7 @@ async def sync_cmds(ctx):
     else:
         await ctx.send(NOT_OWNER_MESSAGE)
 
+#shutdown bot
 @bot.command()
 async def shutdown(ctx):
     if ctx.author.id in OWNER_USERIDS:
@@ -223,13 +224,11 @@ async def on_raw_reaction_add(payload):
     # checks if it not the bot
     if payload.user_id != bot.user.id:
         # reaction role add
-        channel_id = str(payload.channel_id)
-        if channel_id in bot.data["reactionRoles"]:
-            message_id = str(payload.message_id) 
-            if message_id in bot.data["reactionRoles"][channel_id]:
-                if payload.emoji.name in bot.data["reactionRoles"][channel_id][message_id]:
-                    guild = bot.get_guild(payload.guild_id)
-                    await guild.get_member(payload.user_id).add_roles(guild.get_role(bot.data["reactionRoles"][channel_id][message_id][payload.emoji.name]), reason="ReactionRole")
+        message_id = str(payload.message_id) 
+        if message_id in bot.data["reactionRoles"]:
+            if payload.emoji.name in bot.data["reactionRoles"][message_id]:
+                guild = bot.get_guild(payload.guild_id)
+                await guild.get_member(payload.user_id).add_roles(guild.get_role(bot.data["reactionRoles"][message_id][payload.emoji.name]), reason="ReactionRole")
 
 # on raw reaction remove
 @bot.event
@@ -237,18 +236,14 @@ async def on_raw_reaction_remove(payload):
     # checks if it not the bot
     if payload.user_id != bot.user.id:
         #reaction role remove
-        channel_id = str(payload.channel_id)
-        if channel_id in bot.data["reactionRoles"]:
-            message_id = str(payload.message_id) 
-            if message_id in bot.data["reactionRoles"][channel_id]:
-                if payload.emoji.name in bot.data["reactionRoles"][channel_id][message_id]:
-                    guild = bot.get_guild(payload.guild_id)
-                    await guild.get_member(payload.user_id).remove_roles(guild.get_role(bot.data["reactionRoles"][channel_id][message_id][payload.emoji.name]), reason="ReactionRole")
+        message_id = str(payload.message_id) 
+        if message_id in bot.data["reactionRoles"]:
+            if payload.emoji.name in bot.data["reactionRoles"][message_id]:
+                guild = bot.get_guild(payload.guild_id)
+                await guild.get_member(payload.user_id).remove_roles(guild.get_role(bot.data["reactionRoles"][message_id][payload.emoji.name]), reason="ReactionRole")
 
 
 # /COMMANDS
-
-
 
 # set join role
 @bot.tree.command(name="join_role", description="Sets the role given on guild join")
@@ -278,52 +273,6 @@ async def button(interaction: discord.Interaction):
     else:
         print('Cancelled...')
 
-# reacton role add
-@bot.tree.command(name="reaction_role_add", description="add a reaction role")
-@app_commands.checks.has_permissions(administrator=True)
-async def reaction_role_add(interaction:discord.Interaction, channel: discord.TextChannel, message_id: str, emoji: str, role: discord.Role):
-    message = await channel.fetch_message(int(message_id))
-    await message.add_reaction(emoji)
-
-    if str(channel.id) not in bot.data["reactionRoles"]:
-        bot.data["reactionRoles"][str(channel.id)] = {}
-
-    if message_id not in bot.data["reactionRoles"][str(channel.id)]:
-        bot.data["reactionRoles"][str(channel.id)][message_id] = {}
-
-    bot.data["reactionRoles"][str(channel.id)][message_id][emoji] = role.id
-    await interaction.response.send_message(f"channel: {channel}, message_id: {message_id}, emoji: {emoji} with role: @{role} has been ADDED", ephemeral=True)
-    print(bot.data["reactionRoles"])
-    write_json_data()
-
-# reaction role remove
-@bot.tree.command(name="reaction_role_remove", description="remove a reaction role")
-@app_commands.checks.has_permissions(administrator=True)
-async def reaction_role_remove(interaction:discord.Interaction, channel: discord.TextChannel, message_id: str, emoji: str):
-    message = await channel.fetch_message(int(message_id))
-    role = bot.data["reactionRoles"][str(channel.id)][message_id][emoji]
-    await message.clear_reaction(emoji)
-
-    del bot.data["reactionRoles"][str(channel.id)][message_id][emoji]
-
-    if not bot.data["reactionRoles"][str(channel.id)][message_id]:
-        del bot.data["reactionRoles"][str(channel.id)][message_id]
-    
-    if not bot.data["reactionRoles"][str(channel.id)]:
-        del bot.data["reactionRoles"][str(channel.id)]
-
-    await interaction.response.send_message(f"channel: {channel}, message_id: {message_id}, emoji: {emoji} with role: {role} has been REMOVED", ephemeral=True)
-    write_json_data()
-
-# reaction role list
-@bot.tree.command(name="reaction_role_list", description="lists the reaction roles (needs work)")
-@app_commands.checks.has_permissions(administrator=True)
-async def reaction_role_list(interaction:discord.Interaction):
-    reaction_roles = bot.data["reactionRoles"]
-    await interaction.response.send_message(f"{reaction_roles}", ephemeral=True)
-
-
-
 
 asyncio.run(load_cogs())
 bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
@@ -337,16 +286,22 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 # move commands to cogs
 # command groups????
 
-#webtoon: add a number input for how many comics in the get command
-#webtoon: maybe clean up the code in the add?
+#-improve commands
+#webtoon: add a number input for how many comics in the get command DONE
+#webtoon: maybe clean up the code in the add? DONE
 
+#reaction roles dont need the channel (problay)
+# reaction roles clear <msg id>
 
 #good error msgs for when you dont have the perms
 
+
+#-needs to be dded
 # add a settings menu thats just a lot of drop downs????
 # help command
 
 # apps (like right click and then it shows apps)
+#what are we chatting about? auto bread
 
 
 
