@@ -281,13 +281,20 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 
 # to do:
+#handle the data beter so i dont get a desync between the server and my pc?????????????????
 
-#-needs to be added
+#-needs to be added:
+
+# poll command!
 # add a settings menu thats just a lot of drop downs????
+
+
+
+# event helper??? (like discord EVENTS the button at the top of all the channels)
 
 # apps (like right click and then it shows apps)
 
 
 
-# event helper??? (like discord EVENTS the button at the top of all the channels)
+
 

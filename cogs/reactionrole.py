@@ -17,6 +17,11 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
         channel = interaction.channel
         message = await channel.fetch_message(int(message_id))
         
+        #checks if its a server emoji and makes it so its only the name
+        if "<:" in emoji:
+            await interaction.response.send_message("for server emojis just do the name!", ephemeral=True)
+            return
+
 
         if message_id not in self.bot.data["reactionRoles"]:
             self.bot.data["reactionRoles"][message_id] = {}
