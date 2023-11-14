@@ -284,7 +284,6 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 #-needs to be added
 # add a settings menu thats just a lot of drop downs????
-# help command done
 
 # apps (like right click and then it shows apps)
 
