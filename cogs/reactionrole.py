@@ -27,6 +27,11 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
         write_json_data(self.bot.data)
         await message.add_reaction(emoji)
         await interaction.response.send_message(f"channel: {channel}, message_id: {message_id}, emoji: {emoji} with role: @{role} has been ADDED", ephemeral=True)
+
+    @reaction_role_add.error
+    async def say_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
         
 
     # reaction role remove
@@ -53,9 +58,14 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
             await interaction.response.send_message(f"all reactionroles on message_id: {message_id} in channel {channel} have been REMOVED", ephemeral=True)
         
         write_json_data(self.bot.data)
+    
+    @reaction_role_remove.error
+    async def say_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
 
     # reaction role list
-    @app_commands.command(name="list", description="lists the reaction roles (needs work)")
+    @app_commands.command(name="list", description="lists the reaction roles")
     async def reaction_role_list(self, interaction:discord.Interaction):
         text = "list of reaction roles:\n"
         for message_id in self.bot.data["reactionRoles"]:

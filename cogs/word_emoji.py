@@ -2,14 +2,16 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import json
+from typing import Optional
 
 
-class WordEmoji(commands.Cog):
+class WordEmoji(commands.GroupCog, name="wmoji"):
   def __init__(self, bot: commands.Bot) -> None:
     self.bot = bot
+    super().__init__()
 
-  @app_commands.command(name="word_emoji", description="make the bot react with a emoji on a word")
-  async def word_emoji(self, interaction:discord.Interaction, word:str, emoji:str):
+  @app_commands.command(name="add", description="make the bot react with a emoji on a word")
+  async def wmoji_add(self, interaction:discord.Interaction, word:str, emoji:str):
     word = word.lower()
 
     if word not in self.bot.data["wordEmojis"]:
@@ -21,6 +23,18 @@ class WordEmoji(commands.Cog):
       await interaction.response.send_message(f"{emoji} will get added on word: {word}")
     else:
       await interaction.response.send_message(f"{emoji} already gets added to {word} or the word {word} already has 10 emojis", ephemeral=True)
+    
+  @app_commands.command(name="remove", description="stops the bot from reacting with a emoji on a word")
+  async def wmoji_remove(self, interaction:discord.Interaction, word:str, emoji: Optional[str]):
+    word = word.lower()
+
+    if type(emoji) == str:
+      self.bot.data["wordEmojis"][word].remove(emoji)
+      await interaction.response.send_message(f"removed {emoji} from being reacted on word: {word}")
+    else:
+      del self.bot.data["wordEmojis"][word]
+      await interaction.response.send_message(f"removed ALL emojis from being reacted on word {word}")
+
     
     
     

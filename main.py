@@ -253,9 +253,10 @@ async def join_role(interaction: discord.Interaction):
     view = JoinRoleView()
     await interaction.response.send_message("text", view=view, ephemeral=True)
 
-#@join_role.error
-#async def say_error(interaction: discord.Interaction, error):
-#    await interaction.response.send_message("Not allowed!", ephemeral=True)
+@join_role.error
+async def say_error(interaction: discord.Interaction, error):
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
 
 
 # button test
@@ -294,9 +295,9 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 #reaction roles dont need the channel (problay) DONE
 # reaction roles clear <msg id> DONE
 
-#improve word emoji
+#improve word emoji DONE
 
-#good error msgs for when you dont have the perms
+#good error msgs for when you dont have the perms DONE
 
 
 
