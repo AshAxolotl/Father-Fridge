@@ -283,8 +283,6 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 # to do:
 #handle the data beter so i dont get a desync between the server and my pc?????????????????
 
-# fix reactionroles with guild emojis
-
 #-needs to be added:
 
 # poll command!
