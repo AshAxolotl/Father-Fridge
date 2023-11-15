@@ -294,7 +294,7 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 # poll command!
 # add a settings menu thats just a lot of drop downs????
 
-
+#epic change
 
 # event helper??? (like discord EVENTS the button at the top of all the channels)
 
