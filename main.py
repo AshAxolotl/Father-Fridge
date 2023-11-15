@@ -21,7 +21,13 @@ OWNER_USERIDS = [461084048337403915]
 NOT_OWNER_MESSAGE = "thy are not the one that shaped me"
 
 # bot variables
-activity = discord.Activity(name="over all", type=discord.ActivityType.watching)
+if os.path.isfile("./in_dev.txt"):
+    activity = discord.Activity(name="IN DEV (PROBLAY WONT NOT SAFE!)", type=discord.ActivityType.streaming)
+else:
+    activity = discord.Activity(name="over all", type=discord.ActivityType.watching)
+
+
+
 # Setting up Discord Bot Manager Class and Command Handler
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), activity=activity)
 
