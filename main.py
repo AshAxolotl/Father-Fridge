@@ -22,7 +22,7 @@ NOT_OWNER_MESSAGE = "thy are not the one that shaped me"
 
 # bot variables
 if os.path.isfile("./in_dev.txt"):
-    activity = discord.Activity(name="IN DEV (PROBLAY WONT NOT SAFE!)", type=discord.ActivityType.streaming)
+    activity = discord.Activity(name="IN DEV (WONT SAFE!!)", type=discord.ActivityType.streaming)
 else:
     activity = discord.Activity(name="over all", type=discord.ActivityType.watching)
 
@@ -291,10 +291,10 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 #-needs to be added:
 
-# poll command!
-# add a settings menu thats just a lot of drop downs????
+# poll command! DONE
+# poll command response with results when times up
 
-#epic change
+# add a settings menu thats just a lot of drop downs????
 
 # event helper??? (like discord EVENTS the button at the top of all the channels)
 
