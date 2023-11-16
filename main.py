@@ -287,12 +287,13 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 
 # to do:
-#handle the data beter so i dont get a desync between the server and my pc?????????????????
 
 #-needs to be added:
 
 # poll command! DONE
 # poll command response with results when times up
+
+# list wmojis
 
 # add a settings menu thats just a lot of drop downs????
 

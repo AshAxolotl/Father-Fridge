@@ -18,7 +18,7 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
     #checks if its longer then 3 chaters
     if len(word) < 3:
       await interaction.response.send_message(f"{word} is shoter then 3 character!", ephemeral=True)
-      return 
+      return
 
     if word not in self.bot.data["wordEmojis"]:
       self.bot.data["wordEmojis"][word] = []
@@ -44,6 +44,34 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
       await interaction.response.send_message(f"removed ALL emojis from being reacted on word {word}")
     
     write_json_data(self.bot.data)
+
+  #word emoji list
+  @app_commands.command(name="list", description="list of wmoji")
+  async def wmoji_list(self, interaction:discord, word: Optional[str]):
+    text = ""
+    if word == None:
+      title = "wmoji: ALL"
+      for key in self.bot.data["wordEmojis"]:
+        text += f"{key}: "
+        for emoji in self.bot.data["wordEmojis"][key]:
+          text += f"{emoji} "
+        text += "\n"
+    else: 
+      word.lower()
+      title = "wmoji: " + word
+      if word in self.bot.data["wordEmojis"]:
+        for emoji in self.bot.data["wordEmojis"][word]:
+          text += f"{emoji} "
+      else:
+        text = f"HAS NONE"
+
+    embed = discord.Embed(
+      colour=discord.Colour.gold(),
+      title=title,
+      description=text,
+    )
+
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
     
     
