@@ -281,6 +281,9 @@ async def button(interaction: discord.Interaction):
     else:
         print('Cancelled...')
 
+@bot.tree.context_menu()
+async def test(interaction: discord.Interaction, message: discord.Message):
+    await interaction.response.send_message(f"{message.author.name} sure said \"{message.content}\" and {interaction.user.name} thinks they should point that out")
 
 asyncio.run(load_cogs())
 bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
@@ -295,7 +298,7 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 # list wmojis DONE
 
-# help command
+# help command DONE
 
 # add a settings menu thats just a lot of drop downs????
 # color setting? (for views)
