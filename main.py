@@ -35,7 +35,7 @@ bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), activity=a
 bot.data = {
     "joinRole": 1171095238929039360,
     "webtoons": ["https://www.webtoons.com/en/thriller/school-bus-graveyard/list?title_no=2705"],
-    "reactionRoles": {}, # {'1171563367467585697': {'1172600729261846639': {'🔫': <Role id=1054483148903284846 name='membruh (guest)'>}}}
+    "reactionRoles": {},
     "wordEmojis": {"cheese": "🧀"},
 }
 
@@ -293,9 +293,12 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 # poll command! DONE
 # poll command response with results when times up
 
-# list wmojis
+# list wmojis DONE
+
+# help command
 
 # add a settings menu thats just a lot of drop downs????
+# color setting? (for views)
 
 # event helper??? (like discord EVENTS the button at the top of all the channels)
 

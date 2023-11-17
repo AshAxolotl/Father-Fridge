@@ -46,7 +46,7 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
     write_json_data(self.bot.data)
 
   #word emoji list
-  @app_commands.command(name="list", description="list of wmoji")
+  @app_commands.command(name="list", description="get a list of wmoji's")
   async def wmoji_list(self, interaction:discord, word: Optional[str]):
     text = ""
     if word == None:
