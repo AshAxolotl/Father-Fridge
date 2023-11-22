@@ -12,17 +12,12 @@ class Poll(commands.Cog):
     
     #poll create
     @app_commands.command(name="poll", description="basic poll command")
-    async def poll(self, interaction:discord.Interaction, question: str, options: str, unix_endtime: Optional[int]):
+    async def poll(self, interaction:discord.Interaction, question: str, options: str, unix_endtime: Optional[int] = None):
         
         options = options.split(", ")
         # emojis only work from 1-9 so check
         if len(options) > 9:
             await interaction.response.send_message("To many options! (max 9)", ephemeral=True)
-            return
-        
-        # makes sure the poll doesnt end in over a 14 days
-        if unix_endtime > 1209600:
-            await interaction.response.send_message("im not keeping a poll open for that long >:(")
             return
         
         # text for view description
@@ -31,20 +26,30 @@ class Poll(commands.Cog):
             emoji = str(i + 1) + "\ufe0f\u20e3"
             options_text += f"{emoji} {options[i]}\n"
 
-        # end time
-        d = datetime.datetime.now()
-        unixtime = time.mktime(d.timetuple())
-        unixtime += float(unix_endtime)
 
         # view
         embed = discord.Embed(
         colour=discord.Colour.dark_gold(),
         title=question,
         description=options_text,
-        timestamp=datetime.datetime.fromtimestamp(unixtime)
         )
+
+        # end time
+        if isinstance(unix_endtime, int):
+            d = datetime.datetime.now()
+            unixtime = time.mktime(d.timetuple())
+            unixtime += float(unix_endtime)
+
+            # makes sure the poll doesnt end in over a 14 days
+            if unix_endtime > 1209600:
+                await interaction.response.send_message("im not keeping a poll open for that long >:(")
+                return
+            
+            embed.set_footer(text="Ends at")
+            embed.timestamp = datetime.datetime.fromtimestamp(unixtime)
         
-        embed.set_footer(text="Ends at")
+        
+        
         
         await interaction.response.send_message(embed=embed)
         
