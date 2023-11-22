@@ -66,7 +66,7 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
         text = f"HAS NONE"
 
     embed = discord.Embed(
-      colour=discord.Colour.gold(),
+      colour=discord.Colour.dark_gold(),
       title=title,
       description=text,
     )

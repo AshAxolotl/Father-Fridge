@@ -20,6 +20,7 @@ class Help(commands.Cog):
         embed.add_field(name="Help", value="Shows you this menu!", inline=False)
         embed.add_field(name="Poll", value="Create polls that can be voted with reactions", inline=False)
         embed.add_field(name="ReactionRole (admin)", value="add, remove, list\nMake the bot give roles on reaction of a message", inline=False)
+        embed.add_field(name="Settings (admin)", value="Bot settings", inline=False)
         embed.add_field(name="Wmoji", value="add, remove, list\nMake the bot react with a emoji on a word (string)", inline=False)
         embed.add_field(name="Webtoon", value="get, add\nWebtoon Recommendations", inline=False)
 
