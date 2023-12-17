@@ -6,7 +6,7 @@ import base64
 import discord
 from discord import app_commands
 from discord.app_commands import Group, command
-from discord.ext import commands
+from discord.ext import commands, tasks
 import asyncio
 import logging
 from typing import Any, List, Optional, Literal
@@ -37,6 +37,7 @@ bot.data = {
     "webtoons": ["https://www.webtoons.com/en/thriller/school-bus-graveyard/list?title_no=2705"],
     "reactionRoles": {},
     "wordEmojis": {"cheese": "🧀"},
+    "quoteChannel": 1185933088748998666,
 }
 
 # cog loading (gets called just before bot.run)
@@ -113,6 +114,7 @@ async def shutdown(ctx):
 
 
 
+
 # on chat message
 @bot.event
 async def on_message(message:discord.Message):
@@ -173,6 +175,8 @@ async def on_raw_reaction_remove(payload):
 @bot.tree.context_menu()
 async def test(interaction: discord.Interaction, message: discord.Message):
     await interaction.response.send_message(f"{message.author.name} sure said \"{message.content}\" and {interaction.user.name} thinks they should point that out")
+
+
 
 asyncio.run(load_cogs())
 bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
