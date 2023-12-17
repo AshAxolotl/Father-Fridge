@@ -4,15 +4,15 @@ from discord.ext import commands
 from typing import Optional, Union
 import datetime
 
-class Qoute(commands.Cog):
+class quote(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         
     
-    # qoute
-    @app_commands.command(name="qoute", description="make a qoute in the qoute channel")
-    async def qoute(self, interaction: discord.Interaction, author: Union[discord.Member ,discord.User], text: Optional[str], image: Optional[discord.Attachment]):
-        qoute_channel = interaction.guild.get_channel(self.bot.data["quoteChannel"])
+    # Quote
+    @app_commands.command(name="quote", description="make a quote in the quote channel")
+    async def quote(self, interaction: discord.Interaction, author: Union[discord.Member ,discord.User], text: Optional[str], image: Optional[discord.Attachment]):
+        quote_channel = interaction.guild.get_channel(self.bot.data["quoteChannel"])
 
         embed = discord.Embed(
         colour=discord.Colour.dark_gold(),
@@ -27,14 +27,14 @@ class Qoute(commands.Cog):
         
         else:
             if not isinstance(text, str):
-                await interaction.response.send_message("When making a qoute pls add text and/or an image", ephemeral=True)
+                await interaction.response.send_message("When making a quote pls add text and/or an image", ephemeral=True)
                 return
         
         
 
-        await qoute_channel.send(embed=embed)
-        await interaction.response.send_message(f"Added qoute \"{text}\" by {author} in #{qoute_channel}!", ephemeral=True)
+        await quote_channel.send(embed=embed)
+        await interaction.response.send_message(f"Added quote \"{text}\" by {author} in #{quote_channel}!", ephemeral=True)
 
 
 async def setup(bot: commands.Bot) -> None:
-  await bot.add_cog(Qoute(bot))
+  await bot.add_cog(Quote(bot))
