@@ -37,7 +37,7 @@ bot.data = {
     "webtoons": ["https://www.webtoons.com/en/thriller/school-bus-graveyard/list?title_no=2705"],
     "reactionRoles": {},
     "wordEmojis": {"cheese": "🧀"},
-    "quoteChannel": 1185933088748998666,
+    "quoteChannel": 1185960968140898325,
 }
 
 # cog loading (gets called just before bot.run)
