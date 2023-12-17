@@ -4,7 +4,7 @@ from discord.ext import commands
 from typing import Optional, Union
 import datetime
 
-class quote(commands.Cog):
+class Quote(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         
