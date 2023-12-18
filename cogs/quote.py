@@ -17,10 +17,11 @@ class Quote(commands.Cog):
         embed = discord.Embed(
         colour=discord.Colour.dark_gold(),
         title=text,
-        description = ""
+        description=""
         )
 
-        embed.set_author(name=f"-{author.name}", icon_url=author.avatar)
+        embed.add_field(name=f"-{author.name}", value="", inline=False)
+        # embed.set_author(name=f"-{author.name}", icon_url=author.avatar)
         embed.set_footer(text=f"added by {interaction.user.name}")
         if isinstance(image, discord.message.Attachment):
             embed.set_image(url=image)
