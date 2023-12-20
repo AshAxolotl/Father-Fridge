@@ -171,10 +171,28 @@ async def on_raw_reaction_remove(payload):
 
 # /COMMANDS
 
-# contect menu test
-@bot.tree.context_menu()
-async def test(interaction: discord.Interaction, message: discord.Message):
-    await interaction.response.send_message(f"{message.author.name} sure said \"{message.content}\" and {interaction.user.name} thinks they should point that out")
+# contect menu 
+# @bot.tree.context_menu()
+# async def test(interaction: discord.Interaction, message: discord.Message):
+#     await interaction.response.send_message(f"{message.author.name} sure said \"{message.content}\" and {interaction.user.name} thinks they should point that out")
+
+@bot.tree.context_menu(name="quote")
+async def quote(interaction: discord.Interaction, message: discord.Message):
+    quote_channel = interaction.guild.get_channel(bot.data["quoteChannel"])
+
+    embed = discord.Embed(
+    colour=discord.Colour.dark_gold(),
+    title=message.content,
+    description=""
+    )
+
+    embed.add_field(name=f"-{message.author.name}", value="", inline=False)
+
+    embed.set_footer(text=f"added by {interaction.user.name}")
+
+    await quote_channel.send(embed=embed)
+    await interaction.response.send_message(f"Added quote \"{message.content}\" by {message.author.name} in #{quote_channel}!", ephemeral=True)
+
 
 
 
