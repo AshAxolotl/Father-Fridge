@@ -51,7 +51,7 @@ async def load_cogs():
 ## JSON 
 # json write
 def write_json_data():
-    data_json = json.dumps(bot.data)
+    data_json = json.dumps(bot.data, indent=4)
     with open("data.json", "w") as file:
         file.write(data_json)
 
@@ -208,17 +208,12 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 # poll command! DONE
 # poll command response with results when times up
 
-# list wmojis DONE
 
-# help command DONE
 
 # add a settings menu thats just a lot of drop downs???? DONE
 # color setting? (for views)
 
 # event helper??? (like discord EVENTS the button at the top of all the channels)
-
-# apps (like right click and then it shows apps)
-
 
 
 

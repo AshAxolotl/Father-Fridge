@@ -83,6 +83,6 @@ async def setup(bot: commands.Bot) -> None:
 
 # json write (for cogs)
 def write_json_data(data):
-    data_json = json.dumps(data)
+    data_json = json.dumps(data, indent=4)
     with open("data.json", "w") as file:
         file.write(data_json)

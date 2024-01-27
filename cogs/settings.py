@@ -84,8 +84,7 @@ class QuoteChannelDropdown(discord.ui.ChannelSelect):
             channel
             for channel in channels
         ]
-        print(selected_channels)
-        print(selected_channels[0].id)
+
         interaction.client.data["quoteChannel"] = selected_channels[0].id
         write_json_data(interaction.client.data)
         await interaction.response.send_message(f"Successfully set quote channel to {selected_channels[0].name}", ephemeral=True)
@@ -123,6 +122,6 @@ async def setup(bot: commands.Bot) -> None:
 
 # json write (for cogs)
 def write_json_data(data):
-  data_json = json.dumps(data)
+  data_json = json.dumps(data, indent=4)
   with open("data.json", "w") as file:
     file.write(data_json)
