@@ -20,7 +20,8 @@ with open("token.txt", "r") as file:
 OWNER_USERIDS = [461084048337403915]
 NOT_OWNER_MESSAGE = "thy are not the one that shaped me"
 
-# bot variables
+
+# Bot Activity
 if os.path.isfile("./in_dev.txt"):
     activity = discord.Activity(name="IN DEV (WONT SAFE!!)", type=discord.ActivityType.streaming)
 else:
@@ -46,6 +47,8 @@ async def load_cogs():
         if filename.endswith(".py"):
             await bot.load_extension(f"cogs.{filename[:-3]}")
 
+
+## JSON 
 # json write
 def write_json_data():
     data_json = json.dumps(bot.data)
@@ -84,6 +87,8 @@ if os.path.isfile("./data.json"):
     update_data()
 write_json_data()
 
+
+## BOT EVENTS
 # start up message
 @bot.event
 async def on_ready():
@@ -112,26 +117,23 @@ async def shutdown(ctx):
     else:
         await ctx.send(NOT_OWNER_MESSAGE)
 
-
-
-
 # on chat message
 @bot.event
 async def on_message(message:discord.Message):
-    #needed to make bot.command() still work
+    # needed to make bot.command() still work
     await bot.process_commands(message)
 
-    #checks that its not a command
+    # checks that its not a command
     if message.content.startswith(bot.command_prefix):
         return
 
-    #if bot mentioned
+    # if bot mentioned
     if bot.user.mentioned_in(message):
         await message.author.send("what doth thee wanteth?")
 
-    #checks if its not the bot that send it
+    # checks if its not the bot that send it
     if message.author != bot.user:
-        #word emojis
+        # word emojis
         for key in bot.data["wordEmojis"]:
             if key in message.content.lower():
                 for emoji in bot.data["wordEmojis"][key]:
@@ -161,7 +163,7 @@ async def on_raw_reaction_add(payload):
 async def on_raw_reaction_remove(payload):
     # checks if it not the bot
     if payload.user_id != bot.user.id:
-        #reaction role remove
+        # reaction role remove
         message_id = str(payload.message_id) 
         if message_id in bot.data["reactionRoles"]:
             if payload.emoji.name in bot.data["reactionRoles"][message_id]:
@@ -169,13 +171,9 @@ async def on_raw_reaction_remove(payload):
                 await guild.get_member(payload.user_id).remove_roles(guild.get_role(bot.data["reactionRoles"][message_id][payload.emoji.name]), reason="ReactionRole")
 
 
-# /COMMANDS
 
-# contect menu 
-# @bot.tree.context_menu()
-# async def test(interaction: discord.Interaction, message: discord.Message):
-#     await interaction.response.send_message(f"{message.author.name} sure said \"{message.content}\" and {interaction.user.name} thinks they should point that out")
-
+## CONTEXT MENUS
+# Quote context menu
 @bot.tree.context_menu(name="quote")
 async def quote(interaction: discord.Interaction, message: discord.Message):
     quote_channel = interaction.guild.get_channel(bot.data["quoteChannel"])
@@ -195,12 +193,15 @@ async def quote(interaction: discord.Interaction, message: discord.Message):
 
 
 
-
+# running the bot
 asyncio.run(load_cogs())
 bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 
 # to do:
+
+# base 64 on the token?
+# format the write json
 
 #-needs to be added:
 
