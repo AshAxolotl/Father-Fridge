@@ -12,13 +12,6 @@ import logging
 from typing import Any, List, Optional, Literal
 
 
-# Conts
-HANDLER = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-with open("token.txt", "r") as file:
-    TOKEN = file.read()
-
-OWNER_USERIDS = [461084048337403915]
-NOT_OWNER_MESSAGE = "thy are not the one that shaped me"
 
 
 # Bot Activity
@@ -32,6 +25,15 @@ else:
 # Setting up Discord Bot Manager Class and Command Handler
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), activity=activity)
 
+# Conts
+HANDLER = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+with open("token.txt", "r") as file:
+    TOKEN = file.read()
+
+bot.OWNER_USERIDS = [461084048337403915]
+NOT_OWNER_MESSAGE = "thy are not the one that shaped me"
+
+
 # data gets stored in json so should be used for saved data (like settings)
 bot.data = {
     "joinRole": 1171095238929039360,
@@ -39,6 +41,10 @@ bot.data = {
     "reactionRoles": {},
     "wordEmojis": {"cheese": "🧀"},
     "quoteChannel": 1185960968140898325,
+    "artContestAnnouncementsChannel": 1142861396875432028,
+    "artContestTheme": "Cheese",
+    "artContestThemeSuggestionsChannel": 1201194360209944766,
+    "artContestThemeSuggestionsThread": 1201197417819820082,
 }
 
 # cog loading (gets called just before bot.run)
@@ -70,6 +76,7 @@ def update_data():
     for key in data_json:
         bot.data[key] = data_json[key]
 
+
 # remove oudated vars in data.json
 def remove_outdated_data():
     data_json = read_json_data()
@@ -88,6 +95,7 @@ if os.path.isfile("./data.json"):
 write_json_data()
 
 
+
 ## BOT EVENTS
 # start up message
 @bot.event
@@ -99,7 +107,7 @@ async def on_ready():
 #sync commands
 @bot.command()
 async def sync_cmds(ctx):
-    if ctx.author.id in OWNER_USERIDS:
+    if ctx.author.id in bot.OWNER_USERIDS:
         print("Synced Commands")
         await bot.tree.sync()
         await ctx.send("Command tree sycned")
@@ -109,7 +117,7 @@ async def sync_cmds(ctx):
 #shutdown bot
 @bot.command()
 async def shutdown(ctx):
-    if ctx.author.id in OWNER_USERIDS:
+    if ctx.author.id in bot.OWNER_USERIDS:
         print("Shutting Down from command")
         await ctx.send("Shutting Down")
         write_json_data()
@@ -172,6 +180,8 @@ async def on_raw_reaction_remove(payload):
 
 
 
+
+
 ## CONTEXT MENUS
 # Quote context menu
 @bot.tree.context_menu(name="quote")
@@ -200,8 +210,9 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 # to do:
 
+# beter profile pic for bot
+
 # base 64 on the token?
-# format the write json
 
 #-needs to be added:
 
@@ -211,7 +222,6 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 
 # add a settings menu thats just a lot of drop downs???? DONE
-# color setting? (for views)
 
 # event helper??? (like discord EVENTS the button at the top of all the channels)
 
