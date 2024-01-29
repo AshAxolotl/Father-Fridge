@@ -44,7 +44,8 @@ bot.data = {
     "artContestAnnouncementsChannel": 1142861396875432028,
     "artContestTheme": "Cheese",
     "artContestThemeSuggestionsChannel": 1201194360209944766,
-    "artContestThemeSuggestionsThread": 1201197417819820082,
+    "artContestThemeSuggestionsMessage": 1201197417819820082,
+    "artContestThemeSuggestions": {"1171539759533920318": "PLACE HOLDER"} # {botid: "PLACE HOLDER"}
 }
 
 # cog loading (gets called just before bot.run)

@@ -13,12 +13,12 @@ def next_weekday(d, weekday):
         days_ahead += 7
     return d + datetime.timedelta(days_ahead)
 
-class ArtContest(commands.Cog):
+class ArtContest(commands.GroupCog, name="art"):
     def __init__(self, bot):
         self.bot = bot
 
     # test command
-    @app_commands.command(name="test_art", description="im going insane")
+    @app_commands.command(name="test", description="im going insane")
     async def test_art(self, interaction: discord.Interaction):
         # Create New Event For Winner Anncouncement
         time_now = discord.utils.utcnow()
@@ -37,23 +37,38 @@ class ArtContest(commands.Cog):
         )
         
         await interaction.response.send_message("succes?", ephemeral=True)
-
-    @commands.Cog.listener()
-    async def on_scheduled_event_create(self, event):
-        # print("CREATE " + str(event))
-        pass
     
-    @commands.Cog.listener()
-    async def on_scheduled_event_delete(self, event):
-        # print("DELETE " + str(event))
-        pass
+    # Suggest Theme Command
+    @app_commands.command(name="suggest_theme", description="suggest a theme!")
+    async def suggest_theme(self, interaction: discord.Interaction, theme: app_commands.Range[str, 1, 50]):
+        # checks there arent already more suggestions then the cap
+        if len(self.bot.data["artContestThemeSuggestions"]) < 9:
+            self.bot.data["artContestThemeSuggestions"][str(interaction.user.id)] = theme
+            # delets the place holder theme suggestion
+            if str(self.bot.user.id) in self.bot.data["artContestThemeSuggestions"]:
+                del self.bot.data["artContestThemeSuggestions"][str(self.bot.user.id)] 
+            
+            channel: discord.TextChannel = interaction.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
+            message: discord.Message  = await channel.fetch_message(self.bot.data["artContestThemeSuggestionsMessage"])
+            embed: discord.Embed = message.embeds[0] # gets the embed that needs to be edited
+
+            # clears all the fields to make sure that 1 person cant suggest more
+            embed.clear_fields()
+            for key in self.bot.data["artContestThemeSuggestions"]:
+                username = self.bot.get_user(int(key)).name
+                embed.add_field(name=self.bot.data["artContestThemeSuggestions"][key], value=username, inline=False)
+
+            await message.edit(embed=embed)
+            await interaction.response.send_message(f"{theme} is added to the suggestions", ephemeral=True)
+            write_json_data(self.bot.data)
+        else:
+            await interaction.response.send_message(f"There are already to many suggestions so your suggestions: {theme} wasn't added (conntact ash about this)")
+
     
     @commands.Cog.listener()
     async def on_scheduled_event_update(self, before: discord.ScheduledEvent, after: discord.ScheduledEvent):
         # Checks if the creator is the bot
         if before.creator == self.bot.user:
-            print("----")
-
             announcements_channel = self.bot.get_channel(self.bot.data["artContestAnnouncementsChannel"]) #maybe move this line?
             event_theme_announcement_name = "Art Contest: theme anncouncement"
             event_winner_announcement_name = "Art Contest: winner announcement"
@@ -71,40 +86,27 @@ class ArtContest(commands.Cog):
                         # Send bot Owners DM to place art on the fridge since it cant be automated
                         for user_id in self.bot.OWNER_USERIDS:
                             user = self.bot.get_user(user_id)
-                            await user.send("PLACE THE ART ON THE FRIDGE!")
+                            await user.send(f"PLACE THE ART ON THE FRIDGE! (for theme: {theme})")
 
                         await announcements_channel.send(f"John won the art contest! with theme: {theme}")
                         #give winner role code here 
 
-                        
-                        ### TIRED ASH NOTES: NEEDS a way of handeling the poll if there no suggestions and when theres no post
-                        # New Suggestions Forum Post for theme
-                        forum_channel: discord.ForumChannel = before.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
-                        old_thread = forum_channel.get_thread(self.bot.data["artContestThemeSuggestionsThread"])
-                        if isinstance(old_thread, discord.Thread): # Checks if the old thread exist 
-                            # Making Poll code here
-                            messages = [message async for message in old_thread.history(limit=50)]
-                            messages = messages[1:-1] # Removes the post name and description from the messages
-                            messages.reverse()
-                            
-                            # Creates theme_idea list with the first 9 entrys of the messages
-                            theme_idea: list = []
-                            i = 0
-                            while i <= min(8, len(messages)):
-                                theme_idea.append(messages[i].content)
-                                i += 1
-                            
-                            await old_thread.edit(name=f"OLD Theme Suggestions: {theme}", archived=True, locked=True, pinned=False) # Close old thread for theme suggestions 
-                        
-                        else:
-                            theme_idea: list = ["there were 0 themes suggested (or the bot broke)"]
 
-                        print(theme_idea)
+                        # create poll code here
+                        
+                        # Creates a new message for showing suggested theemes
+                        suggestions_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
+                        embed = discord.Embed(title="Use /art suggest_theme <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
+                        embed.set_author(name="Theme Suggestions", icon_url=self.bot.user.avatar)
+                        embed.add_field(name="PLACE HOLDER", value="-Father Fridge", inline=False)
+                        
+                        message = await suggestions_channel.send(embed=embed)
 
-                        await forum_channel.create_thread(name="Theme Suggestions", content="WORDS HERE")
-                        self.bot.data["artContestThemeSuggestionsThread"] = forum_channel.last_message_id
+                        self.bot.data["artContestThemeSuggestionsMessage"] = message.id
+                        self.bot.data["artContestThemeSuggestions"] = {str(self.bot.user.id): "PLACE HOLDER"} # clears the theme suggestions
                         write_json_data(self.bot.data)
-                    
+
+                        # New scheduled event for theme annoucement                   
                         time_now = discord.utils.utcnow()
                         time_day = next_weekday(time_now, 1) # sets the time to coming tuesday
                         time_start = time_day.replace(hour=17, minute=0, second=0)
@@ -190,3 +192,33 @@ def write_json_data(data):
 
 # to do:
 # think of way to display current and old theme suggtions
+    
+
+
+                        # ### TIRED ASH NOTES: NEEDS a way of handeling the poll if there no suggestions and when theres no post
+                        # # New Suggestions Forum Post for theme
+                        # forum_channel: discord.ForumChannel = before.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
+                        # old_thread = forum_channel.get_thread(self.bot.data["artContestThemeSuggestionsThread"])
+                        # if isinstance(old_thread, discord.Thread): # Checks if the old thread exist 
+                        #     # Making Poll code here
+                        #     messages = [message async for message in old_thread.history(limit=50)]
+                        #     messages = messages[1:-1] # Removes the post name and description from the messages
+                        #     messages.reverse()
+                            
+                        #     # Creates theme_idea list with the first 9 entrys of the messages
+                        #     theme_idea: list = []
+                        #     i = 0
+                        #     while i <= min(8, len(messages)):
+                        #         theme_idea.append(messages[i].content)
+                        #         i += 1
+                            
+                        #     await old_thread.edit(name=f"OLD Theme Suggestions: {theme}", archived=True, locked=True, pinned=False) # Close old thread for theme suggestions 
+                        
+                        # else:
+                        #     theme_idea: list = ["there were 0 themes suggested (or the bot broke)"]
+
+                        # print(theme_idea)
+
+                        # await forum_channel.create_thread(name="Theme Suggestions", content="WORDS HERE")
+                        # self.bot.data["artContestThemeSuggestionsThread"] = forum_channel.last_message_id
+                        # write_json_data(self.bot.data)
