@@ -69,7 +69,7 @@ class ArtContest(commands.GroupCog, name="art"):
     async def on_scheduled_event_update(self, before: discord.ScheduledEvent, after: discord.ScheduledEvent):
         # Checks if the creator is the bot
         if before.creator == self.bot.user:
-            announcements_channel = self.bot.get_channel(self.bot.data["artContestAnnouncementsChannel"]) #maybe move this line?
+            announcements_channel: discord.TextChannel = self.bot.get_channel(self.bot.data["artContestAnnouncementsChannel"]) #maybe move this line?
             event_theme_announcement_name = "Art Contest: theme anncouncement"
             event_winner_announcement_name = "Art Contest: winner announcement"
             theme = self.bot.data["artContestTheme"]
@@ -83,26 +83,44 @@ class ArtContest(commands.GroupCog, name="art"):
                         # Complets the winner  announcement event so it gets removed
                         await after.edit(status=EventStatus.completed)
 
+                        #WIP get winner of voting code here
+
                         # Send bot Owners DM to place art on the fridge since it cant be automated
                         for user_id in self.bot.OWNER_USERIDS:
                             user = self.bot.get_user(user_id)
                             await user.send(f"PLACE THE ART ON THE FRIDGE! (for theme: {theme})")
 
                         await announcements_channel.send(f"John won the art contest! with theme: {theme}")
-                        #give winner role code here 
+                        #WIP give winner role code here
 
 
-                        # create poll code here
+                        # Create theme poll
+                        poll_options_text: str = ""
+                        number: int = 0
+                        for key in self.bot.data["artContestThemeSuggestions"]:
+                            number += 1
+                            emoji = str(number) + "\ufe0f\u20e3" # number emojis 1️⃣
+                            poll_option = self.bot.data["artContestThemeSuggestions"][key]
+                            poll_options_text += f"{emoji} {poll_option}\n"
+                        
+                        poll_embed = discord.Embed(title="Vote for a theme!", description=poll_options_text, colour=discord.Colour.dark_gold())
+                        poll_message = await announcements_channel.send(embed=poll_embed)
+                        
+                        # Adds the emojis to the theme poll so it can be voted on
+                        for i in range(len(self.bot.data["artContestThemeSuggestions"])):
+                            emoji = str(i + 1) + "\ufe0f\u20e3"
+                            await poll_message.add_reaction(emoji)
+
                         
                         # Creates a new message for showing suggested theemes
                         suggestions_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
-                        embed = discord.Embed(title="Use /art suggest_theme <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
-                        embed.set_author(name="Theme Suggestions", icon_url=self.bot.user.avatar)
-                        embed.add_field(name="PLACE HOLDER", value="-Father Fridge", inline=False)
+                        suggestion_embed = discord.Embed(title="Use /art suggest_theme <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
+                        suggestion_embed.set_author(name="Theme Suggestions", icon_url=self.bot.user.avatar)
+                        suggestion_embed.add_field(name="PLACE HOLDER", value="-Father Fridge", inline=False)
                         
-                        message = await suggestions_channel.send(embed=embed)
+                        suggestion_message = await suggestions_channel.send(embed=suggestion_embed)
 
-                        self.bot.data["artContestThemeSuggestionsMessage"] = message.id
+                        self.bot.data["artContestThemeSuggestionsMessage"] = suggestion_message.id
                         self.bot.data["artContestThemeSuggestions"] = {str(self.bot.user.id): "PLACE HOLDER"} # clears the theme suggestions
                         write_json_data(self.bot.data)
 
@@ -192,6 +210,8 @@ def write_json_data(data):
 
 # to do:
 # think of way to display current and old theme suggtions
+
+# final thing once everything works: make sure it pings and clean up the text
     
 
 
