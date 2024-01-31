@@ -3,6 +3,7 @@ import discord
 from discord import EventStatus, app_commands, EntityType, PrivacyLevel
 import datetime
 import json
+from random import choice
 
 
 
@@ -36,7 +37,7 @@ class ArtContest(commands.GroupCog, name="art"):
             location="TEST TES TEST"
         )
         
-        await interaction.response.send_message("succes?", ephemeral=True)
+        await interaction.response.send_message(f"succes?", ephemeral=True)
     
     # Suggest Theme Command
     @app_commands.command(name="suggest_theme", description="suggest a theme!")
@@ -45,8 +46,8 @@ class ArtContest(commands.GroupCog, name="art"):
         if len(self.bot.data["artContestThemeSuggestions"]) < 9:
             self.bot.data["artContestThemeSuggestions"][str(interaction.user.id)] = theme
             # delets the place holder theme suggestion
-            if str(self.bot.user.id) in self.bot.data["artContestThemeSuggestions"]:
-                del self.bot.data["artContestThemeSuggestions"][str(self.bot.user.id)] 
+            # if str(self.bot.user.id) in self.bot.data["artContestThemeSuggestions"]:
+            #     del self.bot.data["artContestThemeSuggestions"][str(self.bot.user.id)] 
             
             channel: discord.TextChannel = interaction.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
             message: discord.Message  = await channel.fetch_message(self.bot.data["artContestThemeSuggestionsMessage"])
@@ -64,7 +65,23 @@ class ArtContest(commands.GroupCog, name="art"):
         else:
             await interaction.response.send_message(f"There are already to many suggestions so your suggestions: {theme} wasn't added (conntact ash about this)")
 
+
+    # WIP make sure player can only vote for 1 theme (THIS ISNT GREAT SINCE ITS NOT SPAM PROOF MIGHT HAVE TO REPLACE IT WITH bUTTONS IDK???)
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        # checks if it not the bot
+        if payload.user_id != self.bot.user.id:
+            if payload.message_id == self.bot.data["artContestThemePollMessage"]:
+                messageable: discord.PartialMessageable = self.bot.get_partial_messageable(self.bot.data["artContestAnnouncementsChannel"])
+                message: discord.PartialMessage = messageable.get_partial_message(payload.message_id)
+
+                if str(payload.user_id) in self.bot.data["artContestThemePollReactions"]:
+                    await message.remove_reaction(self.bot.data["artContestThemePollReactions"][str(payload.user_id)], discord.Object(id=payload.user_id))
+            
+                self.bot.data["artContestThemePollReactions"][str(payload.user_id)] = payload.emoji.name
+                write_json_data(self.bot.data)
     
+
     @commands.Cog.listener()
     async def on_scheduled_event_update(self, before: discord.ScheduledEvent, after: discord.ScheduledEvent):
         # Checks if the creator is the bot
@@ -105,11 +122,15 @@ class ArtContest(commands.GroupCog, name="art"):
                         
                         poll_embed = discord.Embed(title="Vote for a theme!", description=poll_options_text, colour=discord.Colour.dark_gold())
                         poll_message = await announcements_channel.send(embed=poll_embed)
+                        self.bot.data["artContestThemePollMessage"] = poll_message.id
                         
                         # Adds the emojis to the theme poll so it can be voted on
                         for i in range(len(self.bot.data["artContestThemeSuggestions"])):
                             emoji = str(i + 1) + "\ufe0f\u20e3"
                             await poll_message.add_reaction(emoji)
+
+                        # Resets the list of reactions that is being kept to make sure people can only vote 1 thing
+                        self.bot.data["artContestThemePollReactions"] = {}
 
                         
                         # Creates a new message for showing suggested theemes
@@ -149,7 +170,31 @@ class ArtContest(commands.GroupCog, name="art"):
                         # Complets the theme announcement event so it gets removed
                         await after.edit(status=EventStatus.completed)
 
-                        await announcements_channel.send("THEME IS TEST!")
+                        # Gets the winning theme from the poll
+                        poll_message: discord.Message  = await announcements_channel.fetch_message(self.bot.data["artContestThemePollMessage"])
+                        reactions = sorted(poll_message.reactions, key=lambda reaction: reaction.count, reverse=True) # sorts the reactions based on count from high to low
+                        highest_count = reactions[0].count
+                        winning_emojis = [] 
+                        # makes a list of the most reacted emojis
+                        for reaction in reactions:
+                            if reaction.count == highest_count:
+                                winning_emojis.append(reaction.emoji)
+
+                        # gets the winning theme's name and handels more then 1 winner
+                        embed = poll_message.embeds[0]
+                        suggested_themes = embed.description.split("\n")
+                        winning_emoji = choice(winning_emojis) # randomly selects a emoji from the winning emojis list
+                        for suggested_theme in suggested_themes:
+                            if suggested_theme.startswith(winning_emoji):
+                                winning_theme = suggested_theme.replace(winning_emoji + " ", "") # removes the emoji from the start of the text
+
+                        await announcements_channel.send(f"THEME: {winning_theme} WON! (WIP TEXT)")
+
+                        self.bot.data["artContestTheme"] = winning_theme
+                        write_json_data(self.bot.data)
+
+
+                        # WIP code for sumbiting art here?
 
                         # Create New Event For Art Contest
                         time_now = discord.utils.utcnow()
@@ -159,7 +204,7 @@ class ArtContest(commands.GroupCog, name="art"):
                         time_end = time_day.replace(hour=22, minute=59, second=0)
 
                         await before.guild.create_scheduled_event(
-                            name=f"Art Contest: {theme}",
+                            name=f"Art Contest: {winning_theme}",
                             description="make art ig",
                             start_time=time_start,
                             end_time=time_end,
@@ -167,8 +212,6 @@ class ArtContest(commands.GroupCog, name="art"):
                             entity_type=EntityType.external,
                             location="TEST TES TEST"
                         )
-
-                        # code for sumbiting art here?
 
 
             # ART CONTEST DONE
@@ -209,7 +252,9 @@ def write_json_data(data):
 
 
 # to do:
-# think of way to display current and old theme suggtions
+# make sure people can only vote on 1 thing on the theme voting (PROBLAY JUST SWITCH TO BUTTONS OR MAYBE NOT IM TO TIRED) 
+
+# theme override command (admins only)
 
 # final thing once everything works: make sure it pings and clean up the text
     

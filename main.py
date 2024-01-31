@@ -45,6 +45,8 @@ bot.data = {
     "artContestTheme": "Cheese",
     "artContestThemeSuggestionsChannel": 1201194360209944766,
     "artContestThemeSuggestionsMessage": 1201197417819820082,
+    "artContestThemePollMessage": 0,
+    "artContestThemePollReactions": {},
     "artContestThemeSuggestions": {"1171539759533920318": "PLACE HOLDER"} # {botid: "PLACE HOLDER"}
 }
 
@@ -211,7 +213,12 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 # to do:
 
+# check if the settings can handle a channel being deleted 
+
 # beter profile pic for bot
+
+# beter way of "syncing" the data.json or maybe even switching to sql or something IDK
+# make a script to launch bot
 
 # base 64 on the token?
 
