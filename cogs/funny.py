@@ -7,7 +7,15 @@ class Funny(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
     
-    # balls
+    ## LISTENER
+    @commands.Cog.listener()
+    async def on_message(self, message:discord.Message):
+        # if bot mentioned responed
+        if self.bot.user.mentioned_in(message):
+            await message.author.send("what doth thee wanteth?")
+
+    ## COMMANDS
+    # balls command
     @app_commands.command(name="balls", description="axe asked for this shit")
     async def balls(self, interaction: discord.Interaction):
         await interaction.response.send_message(f"if you want balls just check {interaction.user} browser history")

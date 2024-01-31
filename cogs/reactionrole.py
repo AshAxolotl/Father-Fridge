@@ -9,7 +9,34 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         super().__init__()  # this is now required in this context.
-    
+
+    ## LISTERNERS
+    # role give
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        # checks if it not the bot
+        if payload.user_id != self.bot.user.id:
+            # reaction role add
+            message_id = str(payload.message_id) 
+            if message_id in self.bot.data["reactionRoles"]:
+                if payload.emoji.name in self.bot.data["reactionRoles"][message_id]:
+                    guild = self.bot.get_guild(payload.guild_id)
+                    await guild.get_member(payload.user_id).add_roles(guild.get_role(self.bot.data["reactionRoles"][message_id][payload.emoji.name]), reason="ReactionRole")
+
+    # role remove
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        # checks if it not the bot
+        if payload.user_id != self.bot.user.id:
+            # reaction role remove
+            message_id = str(payload.message_id) 
+            if message_id in self.bot.data["reactionRoles"]:
+                if payload.emoji.name in self.bot.data["reactionRoles"][message_id]:
+                    guild = self.bot.get_guild(payload.guild_id)
+                    await guild.get_member(payload.user_id).remove_roles(guild.get_role(self.bot.data["reactionRoles"][message_id][payload.emoji.name]), reason="ReactionRole")
+
+
+    ## COMMANDS
     # reacton role add
     @app_commands.command(name="add", description="add a reaction role (needs to be used in the channel the msg is in)")
     @app_commands.checks.has_permissions(administrator=True)

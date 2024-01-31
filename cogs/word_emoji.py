@@ -10,6 +10,19 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
     self.bot = bot
     super().__init__()
 
+
+  ## LISTENER
+  @commands.Cog.listener()
+  async def on_message(self, message:discord.Message): 
+    if message.author != self.bot.user:
+      # word emojis
+      for key in self.bot.data["wordEmojis"]:
+        if key in message.content.lower():
+          for emoji in self.bot.data["wordEmojis"][key]:
+            await message.add_reaction(emoji)
+      
+
+  ## COMMANDS
   #word emoji add
   @app_commands.command(name="add", description="make the bot react with a emoji on a word")
   async def wmoji_add(self, interaction:discord.Interaction, word:str, emoji:str):

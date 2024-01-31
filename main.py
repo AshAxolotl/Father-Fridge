@@ -105,7 +105,7 @@ write_json_data()
 async def on_ready():
     print("--------------")
     print(f"{bot.user} is CONNECTED!")
-    print(f"with cogs: {bot.extensions}")
+    # print(f"with cogs: {bot.extensions}")
 
 #sync commands
 @bot.command()
@@ -134,21 +134,7 @@ async def on_message(message:discord.Message):
     # needed to make bot.command() still work
     await bot.process_commands(message)
 
-    # checks that its not a command
-    if message.content.startswith(bot.command_prefix):
-        return
 
-    # if bot mentioned
-    if bot.user.mentioned_in(message):
-        await message.author.send("what doth thee wanteth?")
-
-    # checks if its not the bot that send it
-    if message.author != bot.user:
-        # word emojis
-        for key in bot.data["wordEmojis"]:
-            if key in message.content.lower():
-                for emoji in bot.data["wordEmojis"][key]:
-                    await message.add_reaction(emoji)
 
  
 # on member join
@@ -157,29 +143,7 @@ async def on_member_join(member): #discord.Member
     role = member.guild.get_role(bot.data["joinRole"])
     await member.add_roles(role, reason="Joined guild")
 
-# on raw reaction add
-@bot.event
-async def on_raw_reaction_add(payload):
-    # checks if it not the bot
-    if payload.user_id != bot.user.id:
-        # reaction role add
-        message_id = str(payload.message_id) 
-        if message_id in bot.data["reactionRoles"]:
-            if payload.emoji.name in bot.data["reactionRoles"][message_id]:
-                guild = bot.get_guild(payload.guild_id)
-                await guild.get_member(payload.user_id).add_roles(guild.get_role(bot.data["reactionRoles"][message_id][payload.emoji.name]), reason="ReactionRole")
 
-# on raw reaction remove
-@bot.event
-async def on_raw_reaction_remove(payload):
-    # checks if it not the bot
-    if payload.user_id != bot.user.id:
-        # reaction role remove
-        message_id = str(payload.message_id) 
-        if message_id in bot.data["reactionRoles"]:
-            if payload.emoji.name in bot.data["reactionRoles"][message_id]:
-                guild = bot.get_guild(payload.guild_id)
-                await guild.get_member(payload.user_id).remove_roles(guild.get_role(bot.data["reactionRoles"][message_id][payload.emoji.name]), reason="ReactionRole")
 
 
 
