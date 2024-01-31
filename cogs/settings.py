@@ -61,7 +61,6 @@ class JoinRoleDropdown(discord.ui.RoleSelect):
         super().__init__(placeholder=f"Join Role: {role}", min_values=1, max_values=1)
         
     async def callback(self, interaction: discord.Interaction):
-        print("JOINROLE")
         roles: List[discord.Role] = self.values
         selected_roles = [
             role

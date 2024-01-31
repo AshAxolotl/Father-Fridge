@@ -1,17 +1,11 @@
 # Importing Dependencies
 import json
 import os.path
-import random
 import base64
 import discord
-from discord import app_commands
-from discord.app_commands import Group, command
-from discord.ext import commands, tasks
+from discord.ext import commands
 import asyncio
 import logging
-from typing import Any, List, Optional, Literal
-
-
 
 
 # Bot Activity
@@ -30,8 +24,7 @@ HANDLER = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 with open("token.txt", "r") as file:
     TOKEN = file.read()
 
-bot.OWNER_USERIDS = [461084048337403915]
-NOT_OWNER_MESSAGE = "thy are not the one that shaped me"
+bot.OWNER_USERIDS = [461084048337403915] 
 
 
 # data gets stored in json so should be used for saved data (like settings)
@@ -107,36 +100,7 @@ async def on_ready():
     print(f"{bot.user} is CONNECTED!")
     # print(f"with cogs: {bot.extensions}")
 
-#sync commands
-@bot.command()
-async def sync_cmds(ctx):
-    if ctx.author.id in bot.OWNER_USERIDS:
-        print("Synced Commands")
-        await bot.tree.sync()
-        await ctx.send("Command tree sycned")
-    else:
-        await ctx.send(NOT_OWNER_MESSAGE)
 
-#shutdown bot
-@bot.command()
-async def shutdown(ctx):
-    if ctx.author.id in bot.OWNER_USERIDS:
-        print("Shutting Down from command")
-        await ctx.send("Shutting Down")
-        write_json_data()
-        await bot.close()
-    else:
-        await ctx.send(NOT_OWNER_MESSAGE)
-
-# on chat message
-@bot.event
-async def on_message(message:discord.Message):
-    # needed to make bot.command() still work
-    await bot.process_commands(message)
-
-
-
- 
 # on member join
 @bot.event
 async def on_member_join(member): #discord.Member
@@ -145,11 +109,7 @@ async def on_member_join(member): #discord.Member
 
 
 
-
-
-
-
-## CONTEXT MENUS
+## CONTEXT MENUS (dont have good cog support so they here)
 # Quote context menu
 @bot.tree.context_menu(name="quote")
 async def quote(interaction: discord.Interaction, message: discord.Message):
@@ -177,23 +137,17 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 # to do:
 
-# check if the settings can handle a channel being deleted 
-
 # beter profile pic for bot
 
 # beter way of "syncing" the data.json or maybe even switching to sql or something IDK
-# make a script to launch bot
-
-# base 64 on the token?
 
 #-needs to be added:
 
 # poll command! DONE
 # poll command response with results when times up
+# POLL COMMAND v2: switch to buttons?
 
 
-
-# add a settings menu thats just a lot of drop downs???? DONE
 
 # event helper??? (like discord EVENTS the button at the top of all the channels)
 

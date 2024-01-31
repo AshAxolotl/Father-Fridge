@@ -21,4 +21,4 @@ class Funny(commands.Cog):
         await interaction.response.send_message(f"if you want balls just check {interaction.user} browser history")
 
 async def setup(bot: commands.Bot) -> None:
-  await bot.add_cog(Funny(bot))
+    await bot.add_cog(Funny(bot))
