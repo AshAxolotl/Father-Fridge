@@ -1,11 +1,12 @@
 # Importing Dependencies
 import json
 import os.path
-import base64
+# import base64
 import discord
 from discord.ext import commands
 import asyncio
 import logging
+
 
 
 # Bot Activity
@@ -34,13 +35,17 @@ bot.data = {
     "reactionRoles": {},
     "wordEmojis": {"cheese": "🧀"},
     "quoteChannel": 1185960968140898325,
-    "artContestAnnouncementsChannel": 1142861396875432028,
+    "artContestActive": False,
     "artContestTheme": "Cheese",
+    "artContestSubmissionChannel": 1202694627031785503,
+    "artContestAnnouncementsChannel": 1142861396875432028,
     "artContestThemeSuggestionsChannel": 1201194360209944766,
     "artContestThemeSuggestionsMessage": 1201197417819820082,
     "artContestThemePollMessage": 0,
     "artContestThemePollReactions": {},
-    "artContestThemeSuggestions": {"1171539759533920318": "PLACE HOLDER"} # {botid: "PLACE HOLDER"}
+    "artContestThemeSuggestions": {"1171539759533920318": "PLACE HOLDER"}, # {botid: "PLACE HOLDER"}
+    "artContestSubmissions": {}
+    
 }
 
 # cog loading (gets called just before bot.run)
@@ -84,7 +89,7 @@ def remove_outdated_data():
     with open("data.json", "w") as file:
         file.write(data_json)
 
-#sets the data to the data in the data.json
+# sets the data to the data in the data.json
 if os.path.isfile("./data.json"):
     remove_outdated_data()
     update_data()
@@ -135,22 +140,19 @@ asyncio.run(load_cogs())
 bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 
-# to do:
+## to do:
 
-# beter profile pic for bot
+# art contest
 
 # beter way of "syncing" the data.json or maybe even switching to sql or something IDK
 
-#-needs to be added:
-
-# poll command! DONE
-# poll command response with results when times up
 # POLL COMMAND v2: switch to buttons?
 
 
 
+## random things to look into:
+
 # event helper??? (like discord EVENTS the button at the top of all the channels)
+# markdown in messages?
 
-
-
-
+# beter profile pic for bot

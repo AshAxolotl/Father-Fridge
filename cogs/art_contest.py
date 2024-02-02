@@ -4,15 +4,17 @@ from discord import EventStatus, app_commands, EntityType, PrivacyLevel
 import datetime
 import json
 from random import choice
+import google.google_forms_api as google_forms_api
+from typing import Optional
 
 
-
-
+# function for setting a datetime to a spesfic day next week
 def next_weekday(d, weekday):
     days_ahead = weekday - d.weekday()
     if days_ahead <= 0: # Target day already happened this week
         days_ahead += 7
     return d + datetime.timedelta(days_ahead)
+
 
 class ArtContest(commands.GroupCog, name="art"):
     def __init__(self, bot):
@@ -23,13 +25,14 @@ class ArtContest(commands.GroupCog, name="art"):
     async def test_art(self, interaction: discord.Interaction):
         # Create New Event For Winner Anncouncement
         time_now = discord.utils.utcnow()
-        time_day = next_weekday(time_now, 0) #sets the time to coming monday
-        time_start = time_day.replace(hour=20, minute=0, second=0)
-        time_end = time_day.replace(hour=20, minute=0, second=1)
+        time_start = time_now.replace(minute=(time_now.minute + 1)) # this needs to be done diffrently since this breaks if the event ends at 59min
+
+        time_day = next_weekday(time_now, 6) # sets the time to coming sunday
+        time_end = time_day.replace(hour=22, minute=59, second=0)
 
         await interaction.guild.create_scheduled_event(
-            name="Art Contest: winner announcement",
-            description="vote on winner ig",
+            name=f"Art Contest: PLACE HOLDER",
+            description="make art ig",
             start_time=time_start,
             end_time=time_end,
             privacy_level=PrivacyLevel.guild_only,
@@ -64,6 +67,46 @@ class ArtContest(commands.GroupCog, name="art"):
             write_json_data(self.bot.data)
         else:
             await interaction.response.send_message(f"There are already to many suggestions so your suggestions: {theme} wasn't added (conntact ash about this)")
+        
+    # Submit Art command
+    @app_commands.command(name="submit_art", description="submit art for the art contest")
+    async def submit_art(self, interaction: discord.Interaction, image: discord.Attachment, title: Optional[str] = "N/A"):
+        if self.bot.data["artContestActive"]: # Check if contest going on
+            user_id = str(interaction.user.id)
+            channel: discord.ForumChannel = interaction.guild.get_channel(self.bot.data["artContestSubmissionChannel"])
+            thread_name = self.bot.data["artContestTheme"] +": "+ title +" -" + interaction.user.name
+            file: discord.File = await image.to_file() # image attachment to file so it can be send
+            
+            if user_id in self.bot.data["artContestSubmissions"]:
+                # Edit submission
+                thread = channel.get_thread(self.bot.data["artContestSubmissions"][user_id]["thread_id"])
+                # checks if title changed and if so change title
+                if title != self.bot.data["artContestSubmissions"][user_id]["title"] and title != "N/A":
+                    thread = await thread.edit(name=thread_name)
+                    self.bot.data["artContestSubmissions"][user_id]["title"] = title
+
+                # Edit image
+                partial_message = thread.get_partial_message(self.bot.data["artContestSubmissions"][user_id]["message_id"])
+                message = await partial_message.edit(attachments=[file]) 
+                self.bot.data["artContestSubmissions"][user_id]["url"] = message.attachments[0].url
+                
+            else:
+                # Create new submission
+                self.bot.data["artContestSubmissions"][user_id] = {}
+                thread = await channel.create_thread(name=thread_name, file=file)
+                
+                self.bot.data["artContestSubmissions"][user_id]["url"] = thread.message.attachments[0].url
+                self.bot.data["artContestSubmissions"][user_id]["thread_id"] = thread.thread.id
+                self.bot.data["artContestSubmissions"][user_id]["message_id"] = thread.message.id
+                self.bot.data["artContestSubmissions"][user_id]["title"] = title
+            
+            
+            self.bot.data["artContestSubmissions"][user_id]["username"] = interaction.user.name
+            write_json_data(self.bot.data)
+            await interaction.response.send_message(f"Sucsessfully uploaded your submission to https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True)
+            
+        else:
+            await interaction.response.send_message("There isnt any art event going on!", ephemeral=True)
 
 
     # WIP make sure player can only vote for 1 theme (THIS ISNT GREAT SINCE ITS NOT SPAM PROOF MIGHT HAVE TO REPLACE IT WITH bUTTONS IDK???)
@@ -191,10 +234,13 @@ class ArtContest(commands.GroupCog, name="art"):
                         await announcements_channel.send(f"THEME: {winning_theme} WON! (WIP TEXT)")
 
                         self.bot.data["artContestTheme"] = winning_theme
-                        write_json_data(self.bot.data)
 
 
                         # WIP code for sumbiting art here?
+                        self.bot.data["artContestActive"] = True
+                        self.bot.data["artContestSubmissions"] = {}
+
+                        write_json_data(self.bot.data)
 
                         # Create New Event For Art Contest
                         time_now = discord.utils.utcnow()
@@ -219,6 +265,93 @@ class ArtContest(commands.GroupCog, name="art"):
                 if before.status == EventStatus.active:
                     if after.status == EventStatus.completed:
                         print("ART CONTEST DONE")
+
+                        # WIP code for making voting for winner here
+                        service = google_forms_api.create_service()
+
+                        # Creates the initial Form
+                        base_form = {"info": {"title": f"Art Contest: {theme}", "documentTitle": f"Art Contest: {theme}"}}
+                        create_result = service.forms().create(body=base_form).execute()
+
+                        # Update to the form to add description and base quistion
+                        form_update = { 
+                            "requests": [
+                                {
+                                    "updateFormInfo": {
+                                        "info": {
+                                            "description": "vote for the art contest!\nREMEMBER: DONT VOTE ON OWN ART AND DONT VOTE MORE THEN ONCE!",
+                                        },
+                                        "updateMask": "description",
+                                    }
+                                },
+                                {
+                                    "createItem": {
+                                        "item": {
+                                            "title": "what is your username?",
+                                            "questionItem": {
+                                                "question": {
+                                                    "required": True,
+                                                    "textQuestion": {
+                                                        "paragraph": False
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "location": {"index": 0},
+                                    }
+                                },
+                            ]
+                        }
+                        
+                        # adds all of the voting quistons to the update
+                        for key in self.bot.data["artContestSubmissions"]:
+                            username = self.bot.data["artContestSubmissions"][key]["username"]
+                            title = self.bot.data["artContestSubmissions"][key]["title"]
+                            form_update["requests"].append(
+                                        {
+                                    "createItem": {
+                                        "item": {
+                                            "title": f"{username}: {title} ",
+                                            "questionGroupItem": {
+                                                "image": {
+                                                    "sourceUri": self.bot.data["artContestSubmissions"][key]["url"],
+                                                },
+                                                "grid": {
+                                                    "columns": {
+                                                        "type": "RADIO",
+                                                        "options": [{"value": "1"}, {"value": "2"}, {"value": "3"}, {"value": "4"}, {"value": "5"}]
+                                                    }
+                                                },
+                                                "questions": [
+                                                    {
+                                                        "rowQuestion": {"title": "How it look"}
+                                                    },
+                                                    {
+                                                        "rowQuestion": {"title": "Originality"}
+                                                    },
+                                                    {
+                                                        "rowQuestion": {"title": "How well does it use the theme"}
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "location": {"index": 1}
+                                    }
+                                },
+                            )
+                        
+                        # Update the form with the form_update
+                        service.forms().batchUpdate(formId=create_result["formId"], body=form_update).execute()
+
+                        # Print the result to see it now has a updated
+                        form_info = service.forms().get(formId=create_result["formId"]).execute()
+                        print(form_info)    
+
+
+                        
+                        self.bot.data["artContestActive"] = False
+                        write_json_data(self.bot.data)
+
                         # Create New Event For Winner Anncouncement
                         time_now = discord.utils.utcnow()
                         time_day = next_weekday(time_now, 0) #sets the time to coming monday
@@ -235,7 +368,7 @@ class ArtContest(commands.GroupCog, name="art"):
                             location="TEST TES TEST"
                         )
 
-                        # code for making voting for winner here
+                        
 
                     
                     
@@ -249,6 +382,10 @@ def write_json_data(data):
   data_json = json.dumps(data, indent=4)
   with open("data.json", "w") as file:
     file.write(data_json)
+
+
+
+# add the quiston ids to every persons submission dictonary
 
 
 # to do:
