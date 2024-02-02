@@ -44,7 +44,8 @@ bot.data = {
     "artContestThemePollMessage": 0,
     "artContestThemePollReactions": {},
     "artContestThemeSuggestions": {"1171539759533920318": "PLACE HOLDER"}, # {botid: "PLACE HOLDER"}
-    "artContestSubmissions": {}
+    "artContestSubmissions": {},
+    "artContestFormId": 0
     
 }
 

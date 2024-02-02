@@ -92,7 +92,8 @@ class ArtContest(commands.GroupCog, name="art"):
                 
             else:
                 # Create new submission
-                self.bot.data["artContestSubmissions"][user_id] = {}
+                id = str(len(self.bot.data["artContestSubmissions"])) * 7
+                self.bot.data["artContestSubmissions"][user_id] = {"id": id[:7]}
                 thread = await channel.create_thread(name=thread_name, file=file)
                 
                 self.bot.data["artContestSubmissions"][user_id]["url"] = thread.message.attachments[0].url
@@ -125,6 +126,7 @@ class ArtContest(commands.GroupCog, name="art"):
                 write_json_data(self.bot.data)
     
 
+    # Scheduled Event Changes 
     @commands.Cog.listener()
     async def on_scheduled_event_update(self, before: discord.ScheduledEvent, after: discord.ScheduledEvent):
         # Checks if the creator is the bot
@@ -235,8 +237,7 @@ class ArtContest(commands.GroupCog, name="art"):
 
                         self.bot.data["artContestTheme"] = winning_theme
 
-
-                        # WIP code for sumbiting art here?
+                        # Resets the submissions
                         self.bot.data["artContestActive"] = True
                         self.bot.data["artContestSubmissions"] = {}
 
@@ -244,7 +245,7 @@ class ArtContest(commands.GroupCog, name="art"):
 
                         # Create New Event For Art Contest
                         time_now = discord.utils.utcnow()
-                        time_start = time_now.replace(minute=(time_now.minute + 1)) # this needs to be done diffrently since this breaks if the event ends at 59min
+                        time_start = time_now + datetime.timedelta(seconds=10)
 
                         time_day = next_weekday(time_now, 6) # sets the time to coming sunday
                         time_end = time_day.replace(hour=22, minute=59, second=0)
@@ -266,7 +267,7 @@ class ArtContest(commands.GroupCog, name="art"):
                     if after.status == EventStatus.completed:
                         print("ART CONTEST DONE")
 
-                        # WIP code for making voting for winner here
+                        # Creat the winner voting form
                         service = google_forms_api.create_service()
 
                         # Creates the initial Form
@@ -307,11 +308,13 @@ class ArtContest(commands.GroupCog, name="art"):
                         for key in self.bot.data["artContestSubmissions"]:
                             username = self.bot.data["artContestSubmissions"][key]["username"]
                             title = self.bot.data["artContestSubmissions"][key]["title"]
+                            id = self.bot.data["artContestSubmissions"][key]["id"]
                             form_update["requests"].append(
                                         {
                                     "createItem": {
                                         "item": {
-                                            "title": f"{username}: {title} ",
+                                            "title": f"{username}: {title}",
+                                            "itemId": f"{id}a",
                                             "questionGroupItem": {
                                                 "image": {
                                                     "sourceUri": self.bot.data["artContestSubmissions"][key]["url"],
@@ -324,12 +327,15 @@ class ArtContest(commands.GroupCog, name="art"):
                                                 },
                                                 "questions": [
                                                     {
+                                                        "itemId": f"{id}b",
                                                         "rowQuestion": {"title": "How it look"}
                                                     },
                                                     {
+                                                        "itemId": f"{id}c",
                                                         "rowQuestion": {"title": "Originality"}
                                                     },
                                                     {
+                                                        "itemId": f"{id}d",
                                                         "rowQuestion": {"title": "How well does it use the theme"}
                                                     }
                                                 ]
@@ -343,12 +349,10 @@ class ArtContest(commands.GroupCog, name="art"):
                         # Update the form with the form_update
                         service.forms().batchUpdate(formId=create_result["formId"], body=form_update).execute()
 
-                        # Print the result to see it now has a updated
-                        form_info = service.forms().get(formId=create_result["formId"]).execute()
-                        print(form_info)    
+                        # # Print the result to see it now has a updated
+                        # form_data = service.forms().get(formId=create_result["formId"]).execute()
 
-
-                        
+                        self.bot.data["artContestFormId"] = create_result["formId"]
                         self.bot.data["artContestActive"] = False
                         write_json_data(self.bot.data)
 
@@ -385,42 +389,18 @@ def write_json_data(data):
 
 
 
-# add the quiston ids to every persons submission dictonary
+#
 
 
 # to do:
+    
+# winner handeling
+# text
+# commands to override theme start events and replace winner enz
+# add pings (problay the final thing to do)
+
+
 # make sure people can only vote on 1 thing on the theme voting (PROBLAY JUST SWITCH TO BUTTONS OR MAYBE NOT IM TO TIRED) 
 
-# theme override command (admins only)
-
-# final thing once everything works: make sure it pings and clean up the text
-    
 
 
-                        # ### TIRED ASH NOTES: NEEDS a way of handeling the poll if there no suggestions and when theres no post
-                        # # New Suggestions Forum Post for theme
-                        # forum_channel: discord.ForumChannel = before.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
-                        # old_thread = forum_channel.get_thread(self.bot.data["artContestThemeSuggestionsThread"])
-                        # if isinstance(old_thread, discord.Thread): # Checks if the old thread exist 
-                        #     # Making Poll code here
-                        #     messages = [message async for message in old_thread.history(limit=50)]
-                        #     messages = messages[1:-1] # Removes the post name and description from the messages
-                        #     messages.reverse()
-                            
-                        #     # Creates theme_idea list with the first 9 entrys of the messages
-                        #     theme_idea: list = []
-                        #     i = 0
-                        #     while i <= min(8, len(messages)):
-                        #         theme_idea.append(messages[i].content)
-                        #         i += 1
-                            
-                        #     await old_thread.edit(name=f"OLD Theme Suggestions: {theme}", archived=True, locked=True, pinned=False) # Close old thread for theme suggestions 
-                        
-                        # else:
-                        #     theme_idea: list = ["there were 0 themes suggested (or the bot broke)"]
-
-                        # print(theme_idea)
-
-                        # await forum_channel.create_thread(name="Theme Suggestions", content="WORDS HERE")
-                        # self.bot.data["artContestThemeSuggestionsThread"] = forum_channel.last_message_id
-                        # write_json_data(self.bot.data)
