@@ -20,10 +20,10 @@ class Funny(commands.Cog):
     async def balls(self, interaction: discord.Interaction):
         await interaction.response.send_message(f"if you want balls just check {interaction.user} browser history")
     
-    # poepuh command
-    @app_commands.command(name="poepuh", description="axe asked for this shit")
-    async def poepuh(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f"poepuh")
+    # echo command
+    @app_commands.command(name="echo", description="make the bot say anything... what could go wrong?")
+    async def echo(self, interaction: discord.Interaction, text: str):
+        await interaction.response.send_message(text)
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Funny(bot))

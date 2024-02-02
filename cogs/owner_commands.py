@@ -27,7 +27,7 @@ class OwnerCommands(commands.Cog):
         else:
             await ctx.send("thy are not the one that shaped me")
 
-    
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(OwnerCommands(bot))

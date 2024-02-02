@@ -46,7 +46,6 @@ bot.data = {
     "artContestThemeSuggestions": {"1171539759533920318": "PLACE HOLDER"}, # {botid: "PLACE HOLDER"}
     "artContestSubmissions": {},
     "artContestFormId": 0
-    
 }
 
 # cog loading (gets called just before bot.run)
@@ -155,5 +154,7 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 # event helper??? (like discord EVENTS the button at the top of all the channels)
 # markdown in messages?
+
+# move all the json stuff into another script?
 
 # beter profile pic for bot
