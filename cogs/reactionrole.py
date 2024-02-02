@@ -58,7 +58,7 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
 
         write_json_data(self.bot.data)
         await message.add_reaction(emoji)
-        await interaction.response.send_message(f"channel: {channel}, message_id: {message_id}, emoji: {emoji} with role: @{role} has been ADDED", ephemeral=True)
+        await interaction.response.send_message(f"channel: https://discord.com/channels/{interaction.guild_id}/{channel.id}, message: https://discord.com/channels/{interaction.guild_id}/{channel.id}/{message_id}, emoji: {emoji} with role: @{role} has been ADDED", ephemeral=True)
 
     @reaction_role_add.error
     async def say_error(self, interaction: discord.Interaction, error):
@@ -82,12 +82,12 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
             if self.bot.data["reactionRoles"][message_id] == {"channel": channel.id}:
                 del self.bot.data["reactionRoles"][message_id]
 
-            await interaction.response.send_message(f"channel: {channel}, message_id: {message_id}, emoji: {emoji} with role: {role} has been REMOVED", ephemeral=True)
+            await interaction.response.send_message(f"channel: https://discord.com/channels/{interaction.guild_id}/{channel.id}, message: https://discord.com/channels/{interaction.guild_id}/{channel.id}/{message_id} emoji: {emoji} with role: {role} has been REMOVED", ephemeral=True)
         else:
             del self.bot.data["reactionRoles"][message_id]
             
             await message.clear_reactions()
-            await interaction.response.send_message(f"all reactionroles on message_id: {message_id} in channel {channel} have been REMOVED", ephemeral=True)
+            await interaction.response.send_message(f"all reactionroles on message: https://discord.com/channels/{interaction.guild_id}/{channel.id}/{message_id} in channel https://discord.com/channels/{interaction.guild_id}/{channel.id} have been REMOVED", ephemeral=True)
         
         write_json_data(self.bot.data)
     
@@ -102,7 +102,7 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
         text = "list of reaction roles:\n"
         for message_id in self.bot.data["reactionRoles"]:
             channel_id = self.bot.data["reactionRoles"][message_id]["channel"]
-            text = text + "https://discord.com/channels/" + str(interaction.guild_id) + "/" + str(channel_id) + "/" + message_id + "\n"
+            text = f"{text} https://discord.com/channels/{interaction.guild_id}/{channel_id}/{message_id}\n"
         await interaction.response.send_message(text, ephemeral=True)
     
 async def setup(bot: commands.Bot) -> None:

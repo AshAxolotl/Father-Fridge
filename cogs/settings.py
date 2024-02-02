@@ -68,7 +68,7 @@ class JoinRoleDropdown(discord.ui.RoleSelect):
         ]
         interaction.client.data["joinRole"] = selected_roles[0].id
         write_json_data(interaction.client.data)
-        await interaction.response.send_message(f"Successfully set join role to {selected_roles[0]}", ephemeral=True)
+        await interaction.response.send_message(f"Successfully set join role to <@&{selected_roles[0].id}>", ephemeral=True)
 
 
 # Quote Channel Dropdown
@@ -86,7 +86,7 @@ class QuoteChannelDropdown(discord.ui.ChannelSelect):
 
         interaction.client.data["quoteChannel"] = selected_channels[0].id
         write_json_data(interaction.client.data)
-        await interaction.response.send_message(f"Successfully set quote channel to {selected_channels[0].name}", ephemeral=True)
+        await interaction.response.send_message(f"Successfully set quote channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True)
 
 
 
