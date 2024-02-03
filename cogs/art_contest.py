@@ -15,6 +15,29 @@ def next_weekday(d, weekday):
         days_ahead += 7
     return d + datetime.timedelta(days_ahead)
 
+def get_sorted_submissions_for_winner(self):
+    # get form responses
+    service = google_forms_api.create_service()
+    results = service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute()
+    
+    # handle responses
+    if "responses" in results: # checks if there where any responses on the form
+        for response in results["responses"]:
+            for answer_id in response["answers"]:
+                for submission_key in self.bot.data["artContestSubmissions"]:
+                    if answer_id[:7] == self.bot.data["artContestSubmissions"][submission_key]["id"]:
+                        self.bot.data["artContestSubmissions"][submission_key]["points"] += int(response["answers"][answer_id]["textAnswers"]["answers"][0]["value"])
+                        self.bot.data["artContestSubmissions"][submission_key]["max_points"] += 5
+                        break
+        
+        # sort submissions based of score
+        for submission_key in self.bot.data["artContestSubmissions"]:
+            self.bot.data["artContestSubmissions"][submission_key]["score"] = self.bot.data["artContestSubmissions"][submission_key]["points"] / self.bot.data["artContestSubmissions"][submission_key]["max_points"]
+
+        # creates a sorted list of tuples with [0] being the ID and [1] all of the data (most defintly not the best way of doing this but i have no idea how to do it beter and it works)
+        sorted_list = sorted(self.bot.data["artContestSubmissions"].items(), key=lambda x: x[1]["score"], reverse=True)
+        return sorted_list
+
 
 class ArtContest(commands.GroupCog, name="art"):
     def __init__(self, bot):
@@ -23,7 +46,7 @@ class ArtContest(commands.GroupCog, name="art"):
     # test command
     @app_commands.command(name="test", description="im going insane")
     async def test_art(self, interaction: discord.Interaction):
-        # Create New Event For Winner Anncouncement
+        # Create New Event For Winner Announcement
         time_now = discord.utils.utcnow()
         time_day = next_weekday(time_now, 0) #sets the time to coming monday
         time_start = time_day.replace(hour=20, minute=0, second=0)
@@ -42,8 +65,8 @@ class ArtContest(commands.GroupCog, name="art"):
         await interaction.response.send_message(f"succes?", ephemeral=True)
     
     # Suggest Theme Command
-    @app_commands.command(name="suggest_theme", description="suggest a theme!")
-    async def suggest_theme(self, interaction: discord.Interaction, theme: app_commands.Range[str, 1, 50]):
+    @app_commands.command(name="suggest", description="suggest a theme!")
+    async def suggest(self, interaction: discord.Interaction, theme: app_commands.Range[str, 1, 50]):
         # checks there arent already more suggestions then the cap
         if len(self.bot.data["artContestThemeSuggestions"]) < 9:
             self.bot.data["artContestThemeSuggestions"][str(interaction.user.id)] = theme
@@ -59,29 +82,31 @@ class ArtContest(commands.GroupCog, name="art"):
             embed.clear_fields()
             for key in self.bot.data["artContestThemeSuggestions"]:
                 username = self.bot.get_user(int(key)).name
-                embed.add_field(name=self.bot.data["artContestThemeSuggestions"][key], value=username, inline=False)
+                embed.add_field(name=self.bot.data["artContestThemeSuggestions"][key], value=f" -{username}", inline=False)
 
             await message.edit(embed=embed)
-            await interaction.response.send_message(f"{theme} is added to the suggestions", ephemeral=True)
+            await interaction.response.send_message(f"Successfully added {theme} to the suggestions in https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True)
             write_json_data(self.bot.data)
         else:
             await interaction.response.send_message(f"There are already to many suggestions so your suggestions: {theme} wasn't added (conntact ash about this)")
         
     # Submit Art command
-    @app_commands.command(name="submit_art", description="submit art for the art contest")
-    async def submit_art(self, interaction: discord.Interaction, image: discord.Attachment, title: Optional[str] = "N/A"):
-        if not self.bot.data["artContestActive"]: # Check if contest going on
+    @app_commands.command(name="submit", description="submit art for the art contest")
+    async def submit(self, interaction: discord.Interaction, art: discord.Attachment, title: Optional[str] = "N/A"):
+        # Check if contest going on
+        if not self.bot.data["artContestActive"]: 
             await interaction.response.send_message("There isnt any art event going on!", ephemeral=True)
             return
         
-        if not image.content_type.split("/")[1].lower() in ["png", "gif", "jpg", "jpeg"]:
+        # Check if valid file type
+        if not art.content_type.split("/")[1].lower() in ["png", "gif", "jpg", "jpeg"]:
             await interaction.response.send_message("File type is not supported by google forms pls post a png, gif, jpg, jpeg! If your submission isnt one of does just post a random image and place the real submission in the forum thread and ping ash about it.", ephemeral=True)
             return
 
         user_id = str(interaction.user.id)
         channel: discord.ForumChannel = interaction.guild.get_channel(self.bot.data["artContestSubmissionsChannel"])
         thread_name = self.bot.data["artContestTheme"] +": "+ title +" -" + interaction.user.name
-        file: discord.File = await image.to_file() # image attachment to file so it can be send
+        file: discord.File = await art.to_file() # art attachment to file so it can be send
         
         if user_id in self.bot.data["artContestSubmissions"]:
             # Edit submission
@@ -91,7 +116,7 @@ class ArtContest(commands.GroupCog, name="art"):
                 thread = await thread.edit(name=thread_name)
                 self.bot.data["artContestSubmissions"][user_id]["title"] = title
 
-            # Edit image
+            # Edit attachment
             partial_message = thread.get_partial_message(self.bot.data["artContestSubmissions"][user_id]["message_id"])
             message = await partial_message.edit(attachments=[file]) 
             self.bot.data["artContestSubmissions"][user_id]["url"] = message.attachments[0].url
@@ -110,10 +135,12 @@ class ArtContest(commands.GroupCog, name="art"):
         
         self.bot.data["artContestSubmissions"][user_id]["username"] = interaction.user.name
         write_json_data(self.bot.data)
-        await interaction.response.send_message(f"Sucsessfully uploaded your submission to https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True)
+        await interaction.response.send_message(f"Successfully uploaded your submission to https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True)
 
 
-    # WIP make sure player can only vote for 1 theme (THIS ISNT GREAT SINCE ITS NOT SPAM PROOF MIGHT HAVE TO REPLACE IT WITH bUTTONS IDK???)
+
+
+    # make sure player can only vote for 1 theme (THIS ISNT GREAT SINCE ITS NOT SPAM PROOF MIGHT HAVE TO REPLACE IT WITH bUTTONS IDK???)
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         # checks if it not the bot
@@ -129,13 +156,14 @@ class ArtContest(commands.GroupCog, name="art"):
                 write_json_data(self.bot.data)
     
 
+
+
     # Scheduled Event Changes 
     @commands.Cog.listener()
     async def on_scheduled_event_update(self, before: discord.ScheduledEvent, after: discord.ScheduledEvent):
         # Checks if the creator is the bot
         if before.creator == self.bot.user:
-            announcements_channel: discord.TextChannel = self.bot.get_channel(self.bot.data["artContestAnnouncementsChannel"]) #maybe move this line?
-            event_theme_announcement_name = "Art Contest: theme anncouncement"
+            event_theme_announcement_name = "Art Contest: theme announcement"
             event_winner_announcement_name = "Art Contest: winner announcement"
             theme = self.bot.data["artContestTheme"]
             event_art_contest_name = f"Art Contest: {theme}"
@@ -144,45 +172,39 @@ class ArtContest(commands.GroupCog, name="art"):
             if before.name == event_winner_announcement_name:            
                 if before.status == EventStatus.scheduled:
                     if after.status == EventStatus.active:
-                        print("VOTING ON WINNER DONE")
                         # Complets the winner  announcement event so it gets removed
                         await after.edit(status=EventStatus.completed)
 
+                        # Get channels
+                        suggestions_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
+                        announcements_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestAnnouncementsChannel"])
+
                         # Get Winner
-                        # get form responses
-                        service = google_forms_api.create_service()
-                        results = service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute()
-                        
-                        # handle responses
-                        if "responses" in results: # checks if there where any responses on the form
-                            for response in results["responses"]:
-                                for answer_id in response["answers"]:
-                                    for submission_key in self.bot.data["artContestSubmissions"]:
-                                        if answer_id[:7] == self.bot.data["artContestSubmissions"][submission_key]["id"]:
-                                            self.bot.data["artContestSubmissions"][submission_key]["points"] += int(response["answers"][answer_id]["textAnswers"]["answers"][0]["value"])
-                                            self.bot.data["artContestSubmissions"][submission_key]["max_points"] += 5
-                                            break
-                            
-                            # sort submissions based of score
-                            for submission_key in self.bot.data["artContestSubmissions"]:
-                                self.bot.data["artContestSubmissions"][submission_key]["score"] = self.bot.data["artContestSubmissions"][submission_key]["points"] / self.bot.data["artContestSubmissions"][submission_key]["max_points"]
+                        sorted_submissions = get_sorted_submissions_for_winner(self=self)
 
-                            # creates a sorted list of tuples with [0] being the ID and [1] all of the data (most defintly not the best way of doing this but i have no idea how to do it beter and it works)
-                            sorted_list = sorted(self.bot.data["artContestSubmissions"].items(), key=lambda x: x[1]["score"], reverse=True)
-
-                            # announce winners
+                        # announce winners
+                        if sorted_submissions is not None:
+                            winner_image_url = sorted_submissions[0][1]["url"]
                             winner_embed_text = ""
                             placement = 0
-                            for submission in sorted_list:
+                            for submission in sorted_submissions:
                                 placement += 1
                                 points = submission[1]["points"]
                                 max_points = submission[1]["max_points"]
                                 winner_embed_text += f"{placement}. <@{submission[0]}> with {points}/{max_points}\n"
+
+                            # WIP give winner post WINNER tag
+                            
                         
                         else:
                             winner_embed_text = "there where no responses to the form :("
+                            winner_image_url = ""
                             
-                        winner_embed = discord.Embed(title=f"Voting Results Winner: {theme}", description=winner_embed_text)
+                        winner_embed = discord.Embed(title="", description=winner_embed_text, colour=discord.Colour.dark_gold())
+                        winner_embed.set_author(name=f"Voting Results: {theme}", url=self.bot.data["artContestResponderUri"])
+                        winner_embed.set_image(url=winner_image_url)
+                        winner_embed.set_footer(text="winner(s) shall be put on the fridge in 3-5 business day")
+                        
                         await announcements_channel.send("<ping here>", embed=winner_embed)
 
 
@@ -195,7 +217,9 @@ class ArtContest(commands.GroupCog, name="art"):
                             poll_option = self.bot.data["artContestThemeSuggestions"][key]
                             poll_options_text += f"{emoji} {poll_option}\n"
                         
-                        poll_embed = discord.Embed(title="Vote for a theme!", description=poll_options_text, colour=discord.Colour.dark_gold())
+                        poll_embed = discord.Embed(title="", description=poll_options_text, colour=discord.Colour.dark_gold())
+                        poll_embed.set_author(name="Vote for the contest theme!")
+
                         poll_message = await announcements_channel.send(embed=poll_embed)
                         self.bot.data["artContestThemePollMessage"] = poll_message.id
                         
@@ -209,10 +233,9 @@ class ArtContest(commands.GroupCog, name="art"):
 
                         
                         # Creates a new message for showing suggested themes
-                        suggestions_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
-                        suggestion_embed = discord.Embed(title="Use /art suggest_theme <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
-                        suggestion_embed.set_author(name="Theme Suggestions", icon_url=self.bot.user.avatar)
-                        suggestion_embed.add_field(name="PLACE HOLDER", value="-Father Fridge", inline=False)
+                        suggestion_embed = discord.Embed(title="Use /art suggest <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
+                        suggestion_embed.set_author(name="Theme Suggestions")
+                        suggestion_embed.add_field(name="PLACE HOLDER", value=" -Father Fridge", inline=False)
                         
                         suggestion_message = await suggestions_channel.send(embed=suggestion_embed)
 
@@ -228,12 +251,12 @@ class ArtContest(commands.GroupCog, name="art"):
 
                         await before.guild.create_scheduled_event(
                             name=event_theme_announcement_name,
-                            description="vote on theme ig",
+                            description="Vote on the theme for the next art contest!",
                             start_time=time_start,
                             end_time=time_end,
                             privacy_level=PrivacyLevel.guild_only,
                             entity_type=EntityType.external,
-                            location="TEST TES TEST"
+                            location=f"https://discord.com/channels/{before.guild_id}/{announcements_channel.id}"
                         )
 
 
@@ -241,9 +264,12 @@ class ArtContest(commands.GroupCog, name="art"):
             elif before.name == event_theme_announcement_name:
                 if before.status == EventStatus.scheduled:
                     if after.status == EventStatus.active:
-                        print("VOTING ON THEME DONE")
                         # Complets the theme announcement event so it gets removed
                         await after.edit(status=EventStatus.completed)
+
+                        # Get channel
+                        announcements_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestAnnouncementsChannel"])
+                        submission_channel_id = self.bot.data["artContestSubmissionsChannel"]
 
                         # Gets the winning theme from the poll
                         poll_message: discord.Message  = await announcements_channel.fetch_message(self.bot.data["artContestThemePollMessage"])
@@ -263,7 +289,7 @@ class ArtContest(commands.GroupCog, name="art"):
                             if suggested_theme.startswith(winning_emoji):
                                 winning_theme = suggested_theme.replace(winning_emoji + " ", "") # removes the emoji from the start of the text
 
-                        await announcements_channel.send(f"THEME: {winning_theme} WON! (WIP TEXT)")
+                        await announcements_channel.send(f"<ping here> Theme \"{winning_theme}\" won the poll. Good luck with your art!", reference=poll_message)
 
                         self.bot.data["artContestTheme"] = winning_theme
 
@@ -282,12 +308,12 @@ class ArtContest(commands.GroupCog, name="art"):
 
                         await before.guild.create_scheduled_event(
                             name=f"Art Contest: {winning_theme}",
-                            description="make art ig",
+                            description="Make art using the theme!\nFor more information check the info channel!",
                             start_time=time_start,
                             end_time=time_end,
                             privacy_level=PrivacyLevel.guild_only,
                             entity_type=EntityType.external,
-                            location="TEST TES TEST"
+                            location=f"https://discord.com/channels/{before.guild_id}/{submission_channel_id}"
                         )
 
 
@@ -295,7 +321,8 @@ class ArtContest(commands.GroupCog, name="art"):
             elif before.name == event_art_contest_name:
                 if before.status == EventStatus.active:
                     if after.status == EventStatus.completed:
-                        print("ART CONTEST DONE")
+                        # Get channel
+                        announcements_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestAnnouncementsChannel"])
 
                         # Creat the winner voting form
                         service = google_forms_api.create_service()
@@ -310,7 +337,7 @@ class ArtContest(commands.GroupCog, name="art"):
                                 {
                                     "updateFormInfo": {
                                         "info": {
-                                            "description": "vote for the art contest!\nREMEMBER: DONT VOTE ON OWN ART AND DONT VOTE MORE THEN ONCE!",
+                                            "description": "vote for the art contest!\nREMEMBER: DONT VOTE ON OWN ART AND DONT VOTE MORE THAN ONCE!",
                                         },
                                         "updateMask": "description",
                                     }
@@ -380,14 +407,16 @@ class ArtContest(commands.GroupCog, name="art"):
                         # Update the form with the form_update
                         service.forms().batchUpdate(formId=create_result["formId"], body=form_update).execute()
 
-                        # # Print the result to see it now has a updated
-                        # form_data = service.forms().get(formId=create_result["formId"]).execute()
+                        responer_uri = create_result["responderUri"]
 
+                        self.bot.data["artContestResponderUri"] = responer_uri
                         self.bot.data["artContestFormId"] = create_result["formId"]
                         self.bot.data["artContestActive"] = False
                         write_json_data(self.bot.data)
 
-                        # Create New Event For Winner Anncouncement
+                        await announcements_channel.send(f"<ping here> Vote on the art here: [google form]({responer_uri})")
+
+                        # Create New Event For Winner Announcement
                         time_now = discord.utils.utcnow()
                         time_day = next_weekday(time_now, 0) #sets the time to coming monday
                         time_start = time_day.replace(hour=20, minute=0, second=0)
@@ -395,12 +424,12 @@ class ArtContest(commands.GroupCog, name="art"):
 
                         await before.guild.create_scheduled_event(
                             name=event_winner_announcement_name,
-                            description="vote on winner ig",
+                            description="Vote on the art contest winner!",
                             start_time=time_start,
                             end_time=time_end,
                             privacy_level=PrivacyLevel.guild_only,
                             entity_type=EntityType.external,
-                            location="TEST TES TEST"
+                            location=responer_uri
                         )
 
                         
@@ -427,11 +456,11 @@ def write_json_data(data):
     
 # winner handeling DONE
 # add settings for art contest channels and role DONE
-# clean up the code a bit?
-# text
-# forum tags?
-# commands to override theme start events and replace winner enz
-# recount winner command?
+# clean up the code a bit? 
+# text DONE
+
+# commands to override theme start events and recount winner votes enz
+# forum tags? 
 # add pings (problay the final thing to do)
 
 

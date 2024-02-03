@@ -46,7 +46,8 @@ bot.data = {
     "artContestThemeSuggestions": {"1171539759533920318": "PLACE HOLDER"}, # {botid: "PLACE HOLDER"}
     "artContestSubmissions": {},
     "artContestFormId": 0,
-    "artContestRole": 1142856096369881188
+    "artContestRole": 1142856096369881188,
+    "artContestResponderUri": ""
 }
 
 # cog loading (gets called just before bot.run)

@@ -8,11 +8,11 @@ class Funny(commands.Cog):
         self.bot = bot
     
     ## LISTENER
-    @commands.Cog.listener()
-    async def on_message(self, message:discord.Message):
-        # if bot mentioned responed
-        if self.bot.user.mentioned_in(message):
-            await message.author.send("what doth thee wanteth?")
+    # @commands.Cog.listener()
+    # async def on_message(self, message:discord.Message):
+    #     # if bot mentioned responed
+    #     if self.bot.user.mentioned_in(message):
+    #         await message.author.send("what doth thee wanteth?")
 
     ## COMMANDS
     # balls command
