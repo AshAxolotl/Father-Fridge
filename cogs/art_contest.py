@@ -25,14 +25,13 @@ class ArtContest(commands.GroupCog, name="art"):
     async def test_art(self, interaction: discord.Interaction):
         # Create New Event For Winner Anncouncement
         time_now = discord.utils.utcnow()
-        time_start = time_now.replace(minute=(time_now.minute + 1)) # this needs to be done diffrently since this breaks if the event ends at 59min
-
-        time_day = next_weekday(time_now, 6) # sets the time to coming sunday
-        time_end = time_day.replace(hour=22, minute=59, second=0)
+        time_day = next_weekday(time_now, 0) #sets the time to coming monday
+        time_start = time_day.replace(hour=20, minute=0, second=0)
+        time_end = time_day.replace(hour=20, minute=0, second=1)
 
         await interaction.guild.create_scheduled_event(
-            name=f"Art Contest: PLACE HOLDER",
-            description="make art ig",
+            name="Art Contest: winner announcement",
+            description="vote on winner ig",
             start_time=time_start,
             end_time=time_end,
             privacy_level=PrivacyLevel.guild_only,
@@ -49,8 +48,8 @@ class ArtContest(commands.GroupCog, name="art"):
         if len(self.bot.data["artContestThemeSuggestions"]) < 9:
             self.bot.data["artContestThemeSuggestions"][str(interaction.user.id)] = theme
             # delets the place holder theme suggestion
-            # if str(self.bot.user.id) in self.bot.data["artContestThemeSuggestions"]:
-            #     del self.bot.data["artContestThemeSuggestions"][str(self.bot.user.id)] 
+            if str(self.bot.user.id) in self.bot.data["artContestThemeSuggestions"]:
+                del self.bot.data["artContestThemeSuggestions"][str(self.bot.user.id)] 
             
             channel: discord.TextChannel = interaction.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
             message: discord.Message  = await channel.fetch_message(self.bot.data["artContestThemeSuggestionsMessage"])
@@ -71,43 +70,47 @@ class ArtContest(commands.GroupCog, name="art"):
     # Submit Art command
     @app_commands.command(name="submit_art", description="submit art for the art contest")
     async def submit_art(self, interaction: discord.Interaction, image: discord.Attachment, title: Optional[str] = "N/A"):
-        if self.bot.data["artContestActive"]: # Check if contest going on
-            user_id = str(interaction.user.id)
-            channel: discord.ForumChannel = interaction.guild.get_channel(self.bot.data["artContestSubmissionChannel"])
-            thread_name = self.bot.data["artContestTheme"] +": "+ title +" -" + interaction.user.name
-            file: discord.File = await image.to_file() # image attachment to file so it can be send
-            
-            if user_id in self.bot.data["artContestSubmissions"]:
-                # Edit submission
-                thread = channel.get_thread(self.bot.data["artContestSubmissions"][user_id]["thread_id"])
-                # checks if title changed and if so change title
-                if title != self.bot.data["artContestSubmissions"][user_id]["title"] and title != "N/A":
-                    thread = await thread.edit(name=thread_name)
-                    self.bot.data["artContestSubmissions"][user_id]["title"] = title
+        if not self.bot.data["artContestActive"]: # Check if contest going on
+            await interaction.response.send_message("There isnt any art event going on!", ephemeral=True)
+            return
+        
+        if not image.content_type.split("/")[1].lower() in ["png", "gif", "jpg", "jpeg"]:
+            await interaction.response.send_message("File type is not supported by google forms pls post a png, gif, jpg, jpeg! If your submission isnt one of does just post a random image and place the real submission in the forum thread and ping ash about it.", ephemeral=True)
+            return
 
-                # Edit image
-                partial_message = thread.get_partial_message(self.bot.data["artContestSubmissions"][user_id]["message_id"])
-                message = await partial_message.edit(attachments=[file]) 
-                self.bot.data["artContestSubmissions"][user_id]["url"] = message.attachments[0].url
-                
-            else:
-                # Create new submission
-                id = str(len(self.bot.data["artContestSubmissions"])) * 7
-                self.bot.data["artContestSubmissions"][user_id] = {"id": id[:7]}
-                thread = await channel.create_thread(name=thread_name, file=file)
-                
-                self.bot.data["artContestSubmissions"][user_id]["url"] = thread.message.attachments[0].url
-                self.bot.data["artContestSubmissions"][user_id]["thread_id"] = thread.thread.id
-                self.bot.data["artContestSubmissions"][user_id]["message_id"] = thread.message.id
+        user_id = str(interaction.user.id)
+        channel: discord.ForumChannel = interaction.guild.get_channel(self.bot.data["artContestSubmissionChannel"])
+        thread_name = self.bot.data["artContestTheme"] +": "+ title +" -" + interaction.user.name
+        file: discord.File = await image.to_file() # image attachment to file so it can be send
+        
+        if user_id in self.bot.data["artContestSubmissions"]:
+            # Edit submission
+            thread = channel.get_thread(self.bot.data["artContestSubmissions"][user_id]["thread_id"])
+            # checks if title changed and if so change title
+            if title != self.bot.data["artContestSubmissions"][user_id]["title"] and title != "N/A":
+                thread = await thread.edit(name=thread_name)
                 self.bot.data["artContestSubmissions"][user_id]["title"] = title
-            
-            
-            self.bot.data["artContestSubmissions"][user_id]["username"] = interaction.user.name
-            write_json_data(self.bot.data)
-            await interaction.response.send_message(f"Sucsessfully uploaded your submission to https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True)
+
+            # Edit image
+            partial_message = thread.get_partial_message(self.bot.data["artContestSubmissions"][user_id]["message_id"])
+            message = await partial_message.edit(attachments=[file]) 
+            self.bot.data["artContestSubmissions"][user_id]["url"] = message.attachments[0].url
             
         else:
-            await interaction.response.send_message("There isnt any art event going on!", ephemeral=True)
+            # Create new submission
+            id = str(len(self.bot.data["artContestSubmissions"])) * 7
+            self.bot.data["artContestSubmissions"][user_id] = {"id": f"0{id[:6]}", "points": 0, "max_points": 0}
+            thread = await channel.create_thread(name=thread_name, file=file)
+            
+            self.bot.data["artContestSubmissions"][user_id]["url"] = thread.message.attachments[0].url
+            self.bot.data["artContestSubmissions"][user_id]["thread_id"] = thread.thread.id
+            self.bot.data["artContestSubmissions"][user_id]["message_id"] = thread.message.id
+            self.bot.data["artContestSubmissions"][user_id]["title"] = title
+        
+        
+        self.bot.data["artContestSubmissions"][user_id]["username"] = interaction.user.name
+        write_json_data(self.bot.data)
+        await interaction.response.send_message(f"Sucsessfully uploaded your submission to https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True)
 
 
     # WIP make sure player can only vote for 1 theme (THIS ISNT GREAT SINCE ITS NOT SPAM PROOF MIGHT HAVE TO REPLACE IT WITH bUTTONS IDK???)
@@ -145,15 +148,42 @@ class ArtContest(commands.GroupCog, name="art"):
                         # Complets the winner  announcement event so it gets removed
                         await after.edit(status=EventStatus.completed)
 
-                        #WIP get winner of voting code here
+                        # Get Winner
+                        # get form responses
+                        service = google_forms_api.create_service()
+                        results = service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute()
+                        
+                        # handle responses
+                        if "responses" in results: # checks if there where any responses on the form
+                            for response in results["responses"]:
+                                for answer_id in response["answers"]:
+                                    for submission_key in self.bot.data["artContestSubmissions"]:
+                                        if answer_id[:7] == self.bot.data["artContestSubmissions"][submission_key]["id"]:
+                                            self.bot.data["artContestSubmissions"][submission_key]["points"] += int(response["answers"][answer_id]["textAnswers"]["answers"][0]["value"])
+                                            self.bot.data["artContestSubmissions"][submission_key]["max_points"] += 5
+                                            break
+                            
+                            # sort submissions based of score
+                            for submission_key in self.bot.data["artContestSubmissions"]:
+                                self.bot.data["artContestSubmissions"][submission_key]["score"] = self.bot.data["artContestSubmissions"][submission_key]["points"] / self.bot.data["artContestSubmissions"][submission_key]["max_points"]
 
-                        # Send bot Owners DM to place art on the fridge since it cant be automated
-                        for user_id in self.bot.OWNER_USERIDS:
-                            user = self.bot.get_user(user_id)
-                            await user.send(f"PLACE THE ART ON THE FRIDGE! (for theme: {theme})")
+                            # creates a sorted list of tuples with [0] being the ID and [1] all of the data (most defintly not the best way of doing this but i have no idea how to do it beter and it works)
+                            sorted_list = sorted(self.bot.data["artContestSubmissions"].items(), key=lambda x: x[1]["score"], reverse=True)
 
-                        await announcements_channel.send(f"John won the art contest! with theme: {theme}")
-                        #WIP give winner role code here
+                            # announce winners
+                            winner_embed_text = ""
+                            placement = 0
+                            for submission in sorted_list:
+                                placement += 1
+                                points = submission[1]["points"]
+                                max_points = submission[1]["max_points"]
+                                winner_embed_text += f"{placement}. <@{submission[0]}> with {points}/{max_points}\n"
+                        
+                        else:
+                            winner_embed_text = "there where no responses to the form :("
+                            
+                        winner_embed = discord.Embed(title=f"Voting Results Winner: {theme}", description=winner_embed_text)
+                        await announcements_channel.send("<ping here>", embed=winner_embed)
 
 
                         # Create theme poll
@@ -178,7 +208,7 @@ class ArtContest(commands.GroupCog, name="art"):
                         self.bot.data["artContestThemePollReactions"] = {}
 
                         
-                        # Creates a new message for showing suggested theemes
+                        # Creates a new message for showing suggested themes
                         suggestions_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
                         suggestion_embed = discord.Embed(title="Use /art suggest_theme <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
                         suggestion_embed.set_author(name="Theme Suggestions", icon_url=self.bot.user.avatar)
@@ -292,6 +322,7 @@ class ArtContest(commands.GroupCog, name="art"):
                                             "questionItem": {
                                                 "question": {
                                                     "required": True,
+                                                    "questionId":"0000aaaa",
                                                     "textQuestion": {
                                                         "paragraph": False
                                                     }
@@ -327,15 +358,15 @@ class ArtContest(commands.GroupCog, name="art"):
                                                 },
                                                 "questions": [
                                                     {
-                                                        "itemId": f"{id}b",
+                                                        "questionId": f"{id}b",
                                                         "rowQuestion": {"title": "How it look"}
                                                     },
                                                     {
-                                                        "itemId": f"{id}c",
+                                                        "questionId": f"{id}c",
                                                         "rowQuestion": {"title": "Originality"}
                                                     },
                                                     {
-                                                        "itemId": f"{id}d",
+                                                        "questionId": f"{id}d",
                                                         "rowQuestion": {"title": "How well does it use the theme"}
                                                     }
                                                 ]
@@ -394,9 +425,13 @@ def write_json_data(data):
 
 # to do:
     
-# winner handeling
+# winner handeling DONE
+# add settings for art contest channels and role
+# clean up the code a bit?
 # text
+# forum tags?
 # commands to override theme start events and replace winner enz
+# recount winner command?
 # add pings (problay the final thing to do)
 
 

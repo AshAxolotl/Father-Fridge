@@ -148,6 +148,7 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 # POLL COMMAND v2: switch to buttons?
 
+# send msg when they join guild?
 
 
 ## random things to look into:
