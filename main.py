@@ -37,7 +37,7 @@ bot.data = {
     "quoteChannel": 1185960968140898325,
     "artContestActive": False,
     "artContestTheme": "Cheese",
-    "artContestSubmissionChannel": 1202694627031785503,
+    "artContestSubmissionsChannel": 1202694627031785503,
     "artContestAnnouncementsChannel": 1142861396875432028,
     "artContestThemeSuggestionsChannel": 1201194360209944766,
     "artContestThemeSuggestionsMessage": 1201197417819820082,
@@ -45,7 +45,8 @@ bot.data = {
     "artContestThemePollReactions": {},
     "artContestThemeSuggestions": {"1171539759533920318": "PLACE HOLDER"}, # {botid: "PLACE HOLDER"}
     "artContestSubmissions": {},
-    "artContestFormId": 0
+    "artContestFormId": 0,
+    "artContestRole": 1142856096369881188
 }
 
 # cog loading (gets called just before bot.run)

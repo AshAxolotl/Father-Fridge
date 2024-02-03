@@ -79,7 +79,7 @@ class ArtContest(commands.GroupCog, name="art"):
             return
 
         user_id = str(interaction.user.id)
-        channel: discord.ForumChannel = interaction.guild.get_channel(self.bot.data["artContestSubmissionChannel"])
+        channel: discord.ForumChannel = interaction.guild.get_channel(self.bot.data["artContestSubmissionsChannel"])
         thread_name = self.bot.data["artContestTheme"] +": "+ title +" -" + interaction.user.name
         file: discord.File = await image.to_file() # image attachment to file so it can be send
         
@@ -426,7 +426,7 @@ def write_json_data(data):
 # to do:
     
 # winner handeling DONE
-# add settings for art contest channels and role
+# add settings for art contest channels and role DONE
 # clean up the code a bit?
 # text
 # forum tags?

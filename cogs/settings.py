@@ -25,16 +25,24 @@ class BaseMenuView(discord.ui.View):
     # Join Role
     @discord.ui.button(label="Join Role", style=discord.ButtonStyle.blurple)
     async def join_role(self, interaction: discord.Interaction, button: discord.ui.Button):
-        view = DropdownView(dropdown=JoinRoleDropdown(self.interaction))
+        view = DropdownView(dropdown=[JoinRoleDropdown(self.interaction)])
         embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Join Role", description="Set the role that users should get when they join the guild.")
         await interaction.response.edit_message(view=view, embed=embed)
         self.stop()
 
     #Quote Channel
     @discord.ui.button(label="Quote Channel", style=discord.ButtonStyle.blurple)
-    async def join_role2(self, interaction: discord.Interaction, button: discord.ui.Button):
-        view = DropdownView(dropdown=QuoteChannelDropdown(self.interaction))
+    async def quote_channel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        view = DropdownView(dropdown=[QuoteChannelDropdown(self.interaction)])
         embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Quote Channel", description="Set the channel where quotes will go")
+        await interaction.response.edit_message(view=view, embed=embed)
+        self.stop()
+
+    #Art Contest
+    @discord.ui.button(label="Art Contest", style=discord.ButtonStyle.blurple)
+    async def art_contest(self, interaction: discord.Interaction, button: discord.ui.Button):
+        view = DropdownView(dropdown=[ArtContestAnnouncementsDropdown(self.interaction), ArtContestThemeSuggestionsDropdown(self.interaction), ArtContestSubmissionsDropdown(self.interaction), ArtContestRoleDropdown(self.interaction)])
+        embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Art Contest", description="Settings for art contest channels and roles")
         await interaction.response.edit_message(view=view, embed=embed)
         self.stop()
 
@@ -44,7 +52,8 @@ class DropdownView(discord.ui.View):
     def __init__(self, dropdown):
         super().__init__()
         # Adds the dropdown to our view object.
-        self.add_item(dropdown)
+        for i in dropdown:
+            self.add_item(i)
     
     @discord.ui.button(label="Back", style=discord.ButtonStyle.gray, row=4)
     async def back_button(self, interaction: discord.Interaction, button: discord.ui.button):
@@ -87,6 +96,75 @@ class QuoteChannelDropdown(discord.ui.ChannelSelect):
         interaction.client.data["quoteChannel"] = selected_channels[0].id
         write_json_data(interaction.client.data)
         await interaction.response.send_message(f"Successfully set quote channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True)
+
+# Art Contest Announcements Channel Dropdown
+class ArtContestAnnouncementsDropdown(discord.ui.ChannelSelect):
+    def __init__(self, interaction: discord.Interaction):
+        channel = interaction.guild.get_channel(interaction.client.data["artContestAnnouncementsChannel"])
+        super().__init__(placeholder=f"Announcements channel: {channel}", min_values=1, max_values=1, channel_types=[ChannelType.text])
+        
+    async def callback(self, interaction: discord.Interaction):
+        channels: List[Union[app_commands.AppCommandChannel, app_commands.AppCommandThread]] = self.values
+        selected_channels = [
+            channel
+            for channel in channels
+        ]
+
+        interaction.client.data["artContestAnnouncementsChannel"] = selected_channels[0].id
+        write_json_data(interaction.client.data)
+        await interaction.response.send_message(f"Successfully set the art contest announcements channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True)
+
+# Art Contest Theme Suggestions Channel Dropdown
+class ArtContestThemeSuggestionsDropdown(discord.ui.ChannelSelect):
+    def __init__(self, interaction: discord.Interaction):
+        channel = interaction.guild.get_channel(interaction.client.data["artContestThemeSuggestionsChannel"])
+        super().__init__(placeholder=f"Theme Suggestions channel: {channel}", min_values=1, max_values=1, channel_types=[ChannelType.text])
+        
+    async def callback(self, interaction: discord.Interaction):
+        channels: List[Union[app_commands.AppCommandChannel, app_commands.AppCommandThread]] = self.values
+        selected_channels = [
+            channel
+            for channel in channels
+        ]
+
+        interaction.client.data["artContestThemeSuggestionsChannel"] = selected_channels[0].id
+        write_json_data(interaction.client.data)
+        await interaction.response.send_message(f"Successfully set the art contest theme suggestions channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True)
+
+# Art Contest Submission Channel Dropdown
+class ArtContestSubmissionsDropdown(discord.ui.ChannelSelect):
+    def __init__(self, interaction: discord.Interaction):
+        channel = interaction.guild.get_channel(interaction.client.data["artContestSubmissionsChannel"])
+        super().__init__(placeholder=f"Submissions channel: {channel}", min_values=1, max_values=1, channel_types=[ChannelType.forum])
+        
+    async def callback(self, interaction: discord.Interaction):
+        channels: List[Union[app_commands.AppCommandChannel, app_commands.AppCommandThread]] = self.values
+        selected_channels = [
+            channel
+            for channel in channels
+        ]
+
+        interaction.client.data["artContestSubmissionsChannel"] = selected_channels[0].id
+        write_json_data(interaction.client.data)
+        await interaction.response.send_message(f"Successfully set the art contest Submissions channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True)
+
+# Art Contest Role Dropdown
+class ArtContestRoleDropdown(discord.ui.RoleSelect):
+    def __init__(self, interaction: discord.Interaction):
+        role = interaction.guild.get_role(interaction.client.data["artContestRole"])
+        super().__init__(placeholder=f"Role: {role}", min_values=1, max_values=1)
+        
+    async def callback(self, interaction: discord.Interaction):
+        roles: List[discord.Role] = self.values
+        selected_roles = [
+            role
+            for role in roles
+        ]
+        interaction.client.data["artContestRole"] = selected_roles[0].id
+        write_json_data(interaction.client.data)
+        await interaction.response.send_message(f"Successfully set the art contest role to <@&{selected_roles[0].id}>", ephemeral=True)
+
+
 
 
 
