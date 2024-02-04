@@ -4,7 +4,7 @@ from discord import EventStatus, app_commands, EntityType, PrivacyLevel
 import datetime
 import json
 from random import choice
-import google.google_forms_api as google_forms_api
+import google.google_api_stuff as google_api_stuff
 from typing import Optional
 
 
@@ -17,26 +17,30 @@ def next_weekday(d, weekday):
 
 def get_sorted_submissions_for_winner(self):
     # get form responses
-    service = google_forms_api.create_service()
-    results = service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute()
+    try:
+        service = google_api_stuff.create_service(type="forms", version="v1")
+        results = service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute()
     
-    # handle responses
-    if "responses" in results: # checks if there where any responses on the form
-        for response in results["responses"]:
-            for answer_id in response["answers"]:
-                for submission_key in self.bot.data["artContestSubmissions"]:
-                    if answer_id[:7] == self.bot.data["artContestSubmissions"][submission_key]["id"]:
-                        self.bot.data["artContestSubmissions"][submission_key]["points"] += int(response["answers"][answer_id]["textAnswers"]["answers"][0]["value"])
-                        self.bot.data["artContestSubmissions"][submission_key]["max_points"] += 5
-                        break
-        
-        # sort submissions based of score
-        for submission_key in self.bot.data["artContestSubmissions"]:
-            self.bot.data["artContestSubmissions"][submission_key]["score"] = self.bot.data["artContestSubmissions"][submission_key]["points"] / self.bot.data["artContestSubmissions"][submission_key]["max_points"]
+        # handle responses
+        if "responses" in results: # checks if there where any responses on the form
+            for response in results["responses"]:
+                for answer_id in response["answers"]:
+                    for submission_key in self.bot.data["artContestSubmissions"]:
+                        if answer_id[:7] == self.bot.data["artContestSubmissions"][submission_key]["id"]:
+                            self.bot.data["artContestSubmissions"][submission_key]["points"] += int(response["answers"][answer_id]["textAnswers"]["answers"][0]["value"])
+                            self.bot.data["artContestSubmissions"][submission_key]["max_points"] += 5
+                            break
+            
+            # sort submissions based of score
+            for submission_key in self.bot.data["artContestSubmissions"]:
+                self.bot.data["artContestSubmissions"][submission_key]["score"] = self.bot.data["artContestSubmissions"][submission_key]["points"] / self.bot.data["artContestSubmissions"][submission_key]["max_points"]
 
-        # creates a sorted list of tuples with [0] being the ID and [1] all of the data (most defintly not the best way of doing this but i have no idea how to do it beter and it works)
-        sorted_list = sorted(self.bot.data["artContestSubmissions"].items(), key=lambda x: x[1]["score"], reverse=True)
-        return sorted_list
+            # creates a sorted list of tuples with [0] being the ID and [1] all of the data (most defintly not the best way of doing this but i have no idea how to do it beter and it works)
+            sorted_list = sorted(self.bot.data["artContestSubmissions"].items(), key=lambda x: x[1]["score"], reverse=True)
+            return sorted_list
+    except:
+        print("The Form for winner could not be found")
+        return None
 
 
 class ArtContest(commands.GroupCog, name="art"):
@@ -324,97 +328,16 @@ class ArtContest(commands.GroupCog, name="art"):
                         # Get channel
                         announcements_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestAnnouncementsChannel"])
 
-                        # Creat the winner voting form
-                        service = google_forms_api.create_service()
+                        create_result = google_api_stuff.create_form(self.bot.data)
 
-                        # Creates the initial Form
-                        base_form = {"info": {"title": f"Art Contest: {theme}", "documentTitle": f"Art Contest: {theme}"}}
-                        create_result = service.forms().create(body=base_form).execute()
+                        responer_url = create_result["responderUri"]
 
-                        # Update to the form to add description and base quistion
-                        form_update = { 
-                            "requests": [
-                                {
-                                    "updateFormInfo": {
-                                        "info": {
-                                            "description": "vote for the art contest!\nREMEMBER: DONT VOTE ON OWN ART AND DONT VOTE MORE THAN ONCE!",
-                                        },
-                                        "updateMask": "description",
-                                    }
-                                },
-                                {
-                                    "createItem": {
-                                        "item": {
-                                            "title": "what is your username?",
-                                            "questionItem": {
-                                                "question": {
-                                                    "required": True,
-                                                    "questionId":"0000aaaa",
-                                                    "textQuestion": {
-                                                        "paragraph": False
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "location": {"index": 0},
-                                    }
-                                },
-                            ]
-                        }
-                        
-                        # adds all of the voting quistons to the update
-                        for key in self.bot.data["artContestSubmissions"]:
-                            username = self.bot.data["artContestSubmissions"][key]["username"]
-                            title = self.bot.data["artContestSubmissions"][key]["title"]
-                            id = self.bot.data["artContestSubmissions"][key]["id"]
-                            form_update["requests"].append(
-                                        {
-                                    "createItem": {
-                                        "item": {
-                                            "title": f"{username}: {title}",
-                                            "itemId": f"{id}a",
-                                            "questionGroupItem": {
-                                                "image": {
-                                                    "sourceUri": self.bot.data["artContestSubmissions"][key]["url"],
-                                                },
-                                                "grid": {
-                                                    "columns": {
-                                                        "type": "RADIO",
-                                                        "options": [{"value": "1"}, {"value": "2"}, {"value": "3"}, {"value": "4"}, {"value": "5"}]
-                                                    }
-                                                },
-                                                "questions": [
-                                                    {
-                                                        "questionId": f"{id}b",
-                                                        "rowQuestion": {"title": "How it look"}
-                                                    },
-                                                    {
-                                                        "questionId": f"{id}c",
-                                                        "rowQuestion": {"title": "Originality"}
-                                                    },
-                                                    {
-                                                        "questionId": f"{id}d",
-                                                        "rowQuestion": {"title": "How well does it use the theme"}
-                                                    }
-                                                ]
-                                            }
-                                        },
-                                        "location": {"index": 1}
-                                    }
-                                },
-                            )
-                        
-                        # Update the form with the form_update
-                        service.forms().batchUpdate(formId=create_result["formId"], body=form_update).execute()
-
-                        responer_uri = create_result["responderUri"]
-
-                        self.bot.data["artContestResponderUri"] = responer_uri
+                        self.bot.data["artContestResponderUri"] = responer_url
                         self.bot.data["artContestFormId"] = create_result["formId"]
                         self.bot.data["artContestActive"] = False
                         write_json_data(self.bot.data)
 
-                        await announcements_channel.send(f"<ping here> Vote on the art here: [google form]({responer_uri})")
+                        await announcements_channel.send(f"<ping here> Vote on the art here: [google form]({responer_url})")
 
                         # Create New Event For Winner Announcement
                         time_now = discord.utils.utcnow()
@@ -429,7 +352,7 @@ class ArtContest(commands.GroupCog, name="art"):
                             end_time=time_end,
                             privacy_level=PrivacyLevel.guild_only,
                             entity_type=EntityType.external,
-                            location=responer_uri
+                            location=responer_url
                         )
 
                         
@@ -462,6 +385,8 @@ def write_json_data(data):
 # commands to override theme start events and recount winner votes enz
 # forum tags? 
 # add pings (problay the final thing to do)
+# add @silent to msgs if possible?
+# update the info channel
 
 
 # make sure people can only vote on 1 thing on the theme voting (PROBLAY JUST SWITCH TO BUTTONS OR MAYBE NOT IM TO TIRED) 

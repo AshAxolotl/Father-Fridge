@@ -2,6 +2,7 @@
 in_dev.txt
 token.txt
 commands.txt
+base_form_id.txt
 *__pycache__
 *.json
 .venv/

@@ -9,6 +9,7 @@ import logging
 
 
 
+
 # Bot Activity
 if os.path.isfile("./in_dev.txt"):
     activity = discord.Activity(name="IN DEV (WONT SAFE!!)", type=discord.ActivityType.streaming)
