@@ -44,7 +44,7 @@ def create_form(data) -> dict:
                             "title": f"Art Contest: {theme}",
                             "description": "vote for the art contest!\nREMEMBER: DONT VOTE ON OWN ART AND DONT VOTE MORE THAN ONCE!",
                         },
-                        "updateMask": "description",
+                        "updateMask": "*",
                     }
                 },
                 {

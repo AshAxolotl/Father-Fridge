@@ -164,7 +164,7 @@ class ArtContest(commands.GroupCog, name="art"):
         winner_embed.set_footer(text="winner(s) shall be put on the fridge in 3-5 business day")
         
         if ping:
-            await announcements_channel.send("<ping here>", embed=winner_embed)
+            await announcements_channel.send(f"<@&{self.bot.data['artContestRole']}>", embed=winner_embed)
         else:
             await announcements_channel.send(embed=winner_embed)
         
@@ -206,7 +206,7 @@ class ArtContest(commands.GroupCog, name="art"):
         time_end = time_day.replace(hour=17, minute=0, second=1)
 
         await interaction.guild.create_scheduled_event(
-            name="Art Contest: theme announcement",
+            name="Art Contest: winner announcement",
             description="Vote on the theme for the next art contest!",
             start_time=time_start,
             end_time=time_end,
@@ -298,7 +298,7 @@ class ArtContest(commands.GroupCog, name="art"):
                         winner_embed.set_image(url=winner_embed_info["image_url"])
                         winner_embed.set_footer(text="winner(s) shall be put on the fridge in 3-5 business day")
                         
-                        await announcements_channel.send("<ping here>", embed=winner_embed)
+                        await announcements_channel.send(f"<@&{self.bot.data['artContestRole']}>", embed=winner_embed)
 
 
                         # Create theme poll
@@ -365,7 +365,7 @@ class ArtContest(commands.GroupCog, name="art"):
                         submission_channel_id = self.bot.data["artContestSubmissionsChannel"]
 
                         # Gets the winning theme from the poll
-                        poll_message: discord.Message  = await announcements_channel.fetch_message(self.bot.data["artContestThemePollMessage"])
+                        poll_message: discord.Message = await announcements_channel.fetch_message(self.bot.data["artContestThemePollMessage"])
                         reactions = sorted(poll_message.reactions, key=lambda reaction: reaction.count, reverse=True) # sorts the reactions based on count from high to low
                         highest_count = reactions[0].count
                         winning_emojis = [] 
@@ -382,7 +382,7 @@ class ArtContest(commands.GroupCog, name="art"):
                             if suggested_theme.startswith(winning_emoji):
                                 winning_theme = suggested_theme.replace(winning_emoji + " ", "") # removes the emoji from the start of the text
 
-                        await announcements_channel.send(f"<ping here> Theme \"{winning_theme}\" won the poll. Good luck with your art!", reference=poll_message)
+                        await announcements_channel.send(f"<@&{self.bot.data['artContestRole']}> Theme \"{winning_theme}\" won the poll. Good luck with your art!", reference=poll_message)
 
                         self.bot.data["artContestTheme"] = winning_theme
 
@@ -426,7 +426,7 @@ class ArtContest(commands.GroupCog, name="art"):
                         self.bot.data["artContestActive"] = False
                         write_json_data(self.bot.data)
 
-                        await announcements_channel.send(f"<ping here> Vote on the art here: [google form]({responer_url})")
+                        await announcements_channel.send(f"<@&{self.bot.data['artContestRole']}> Vote on the art here: [google form]({responer_url})")
 
                         # Create New Event For Winner Announcement
                         time_now = discord.utils.utcnow()
@@ -459,22 +459,6 @@ def write_json_data(data):
   with open("data.json", "w") as file:
     file.write(data_json)
 
-
-
-#
-
-
-# to do:
-    
-# winner handeling DONE
-# add settings for art contest channels and role DONE
-# clean up the code a bit? DONE
-# text DONE
-
-# commands to override theme start events and recount winner votes enz DONE
-# add pings (problay the final thing to do)
-# add @silent to msgs if possible? DONE
-# update the info channel
 
 
 
