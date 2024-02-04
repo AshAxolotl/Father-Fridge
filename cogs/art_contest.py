@@ -15,9 +15,11 @@ def next_weekday(d, weekday):
         days_ahead += 7
     return d + datetime.timedelta(days_ahead)
 
-def get_sorted_submissions_for_winner(self):
-    # get form responses
+
+
+def get_contest_winner(self):
     try:
+        # get form responses
         service = google_api_stuff.create_service(type="forms", version="v1")
         results = service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute()
     
@@ -36,17 +38,34 @@ def get_sorted_submissions_for_winner(self):
                 self.bot.data["artContestSubmissions"][submission_key]["score"] = self.bot.data["artContestSubmissions"][submission_key]["points"] / self.bot.data["artContestSubmissions"][submission_key]["max_points"]
 
             # creates a sorted list of tuples with [0] being the ID and [1] all of the data (most defintly not the best way of doing this but i have no idea how to do it beter and it works)
-            sorted_list = sorted(self.bot.data["artContestSubmissions"].items(), key=lambda x: x[1]["score"], reverse=True)
-            return sorted_list
+            sorted_submissions = sorted(self.bot.data["artContestSubmissions"].items(), key=lambda x: x[1]["score"], reverse=True)
     except:
         print("The Form for winner could not be found")
-        return None
+        sorted_submissions = None
+
+    # create embed text
+    if sorted_submissions is not None:
+        winner_image_url = sorted_submissions[0][1]["url"]
+        winner_embed_text = ""
+        placement = 0
+        for submission in sorted_submissions:
+            placement += 1
+            points = submission[1]["points"]
+            max_points = submission[1]["max_points"]
+            winner_embed_text += f"{placement}. <@{submission[0]}> with {points}/{max_points}\n"
+
+        # WIP give winner post WINNER tag
+        return {"text": winner_embed_text, "image_url": winner_image_url}
+        
+    else:
+        return {"text": "there where no responses to the form :(", "image_url": ""}
 
 
 class ArtContest(commands.GroupCog, name="art"):
     def __init__(self, bot):
         self.bot = bot
 
+    ## USER COMMANDS
     # test command
     @app_commands.command(name="test", description="im going insane")
     async def test_art(self, interaction: discord.Interaction):
@@ -89,7 +108,7 @@ class ArtContest(commands.GroupCog, name="art"):
                 embed.add_field(name=self.bot.data["artContestThemeSuggestions"][key], value=f" -{username}", inline=False)
 
             await message.edit(embed=embed)
-            await interaction.response.send_message(f"Successfully added {theme} to the suggestions in https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True)
+            await interaction.response.send_message(f"Successfully added {theme} to the suggestions in https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True, suppress_embeds=True)
             write_json_data(self.bot.data)
         else:
             await interaction.response.send_message(f"There are already to many suggestions so your suggestions: {theme} wasn't added (conntact ash about this)")
@@ -139,7 +158,39 @@ class ArtContest(commands.GroupCog, name="art"):
         
         self.bot.data["artContestSubmissions"][user_id]["username"] = interaction.user.name
         write_json_data(self.bot.data)
-        await interaction.response.send_message(f"Successfully uploaded your submission to https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True)
+        await interaction.response.send_message(f"Successfully uploaded your submission to https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True, suppress_embeds=True)
+
+    ## ADMIN COMMANDS
+    # recount winner
+    @app_commands.command(name="recount", description="recounts the votes of the art contest")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def recount(self, interaction: discord.Interaction, ping: Optional[bool] = False):
+        announcements_channel: discord.TextChannel = interaction.guild.get_channel(self.bot.data["artContestAnnouncementsChannel"])
+
+        # Get winner
+        for submission_key in self.bot.data["artContestSubmissions"]:
+            self.bot.data["artContestSubmissions"][submission_key]["points"] = 0
+            self.bot.data["artContestSubmissions"][submission_key]["max_points"] = 0
+
+        winner_embed_info = get_contest_winner(self)
+            
+        winner_embed = discord.Embed(title="", description=winner_embed_info["text"], colour=discord.Colour.dark_gold())
+        winner_embed.set_author(name=f"Voting Recount!", url=self.bot.data["artContestResponderUri"])
+        winner_embed.set_image(url=winner_embed_info["image_url"])
+        winner_embed.set_footer(text="winner(s) shall be put on the fridge in 3-5 business day")
+        
+        if ping:
+            await announcements_channel.send("<ping here>", embed=winner_embed)
+        else:
+            await announcements_channel.send(embed=winner_embed)
+        
+        await interaction.response.send_message(f"recounted the votes and send message in https://discord.com/channels/{interaction.guild_id}/{announcements_channel.id}!", ephemeral=True, suppress_embeds=True)
+
+    @recount.error
+    async def say_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+
 
 
 
@@ -183,30 +234,12 @@ class ArtContest(commands.GroupCog, name="art"):
                         suggestions_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
                         announcements_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestAnnouncementsChannel"])
 
-                        # Get Winner
-                        sorted_submissions = get_sorted_submissions_for_winner(self=self)
-
-                        # announce winners
-                        if sorted_submissions is not None:
-                            winner_image_url = sorted_submissions[0][1]["url"]
-                            winner_embed_text = ""
-                            placement = 0
-                            for submission in sorted_submissions:
-                                placement += 1
-                                points = submission[1]["points"]
-                                max_points = submission[1]["max_points"]
-                                winner_embed_text += f"{placement}. <@{submission[0]}> with {points}/{max_points}\n"
-
-                            # WIP give winner post WINNER tag
+                        # Get winner
+                        winner_embed_info = get_contest_winner(self)
                             
-                        
-                        else:
-                            winner_embed_text = "there where no responses to the form :("
-                            winner_image_url = ""
-                            
-                        winner_embed = discord.Embed(title="", description=winner_embed_text, colour=discord.Colour.dark_gold())
+                        winner_embed = discord.Embed(title="", description=winner_embed_info["text"], colour=discord.Colour.dark_gold())
                         winner_embed.set_author(name=f"Voting Results: {theme}", url=self.bot.data["artContestResponderUri"])
-                        winner_embed.set_image(url=winner_image_url)
+                        winner_embed.set_image(url=winner_embed_info["image_url"])
                         winner_embed.set_footer(text="winner(s) shall be put on the fridge in 3-5 business day")
                         
                         await announcements_channel.send("<ping here>", embed=winner_embed)

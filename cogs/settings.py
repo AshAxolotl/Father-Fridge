@@ -95,7 +95,7 @@ class QuoteChannelDropdown(discord.ui.ChannelSelect):
 
         interaction.client.data["quoteChannel"] = selected_channels[0].id
         write_json_data(interaction.client.data)
-        await interaction.response.send_message(f"Successfully set quote channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True)
+        await interaction.response.send_message(f"Successfully set quote channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True, suppress_embeds=True)
 
 # Art Contest Announcements Channel Dropdown
 class ArtContestAnnouncementsDropdown(discord.ui.ChannelSelect):
@@ -112,7 +112,7 @@ class ArtContestAnnouncementsDropdown(discord.ui.ChannelSelect):
 
         interaction.client.data["artContestAnnouncementsChannel"] = selected_channels[0].id
         write_json_data(interaction.client.data)
-        await interaction.response.send_message(f"Successfully set the art contest announcements channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True)
+        await interaction.response.send_message(f"Successfully set the art contest announcements channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True, suppress_embeds=True)
 
 # Art Contest Theme Suggestions Channel Dropdown
 class ArtContestThemeSuggestionsDropdown(discord.ui.ChannelSelect):
@@ -129,7 +129,7 @@ class ArtContestThemeSuggestionsDropdown(discord.ui.ChannelSelect):
 
         interaction.client.data["artContestThemeSuggestionsChannel"] = selected_channels[0].id
         write_json_data(interaction.client.data)
-        await interaction.response.send_message(f"Successfully set the art contest theme suggestions channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True)
+        await interaction.response.send_message(f"Successfully set the art contest theme suggestions channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True, suppress_embeds=True)
 
 # Art Contest Submission Channel Dropdown
 class ArtContestSubmissionsDropdown(discord.ui.ChannelSelect):
@@ -146,7 +146,7 @@ class ArtContestSubmissionsDropdown(discord.ui.ChannelSelect):
 
         interaction.client.data["artContestSubmissionsChannel"] = selected_channels[0].id
         write_json_data(interaction.client.data)
-        await interaction.response.send_message(f"Successfully set the art contest Submissions channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True)
+        await interaction.response.send_message(f"Successfully set the art contest Submissions channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True, suppress_embeds=True)
 
 # Art Contest Role Dropdown
 class ArtContestRoleDropdown(discord.ui.RoleSelect):

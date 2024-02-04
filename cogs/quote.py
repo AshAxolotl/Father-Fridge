@@ -34,7 +34,7 @@ class Quote(commands.Cog):
         
 
         await quote_channel.send(embed=embed)
-        await interaction.response.send_message(f"Added quote \"{text}\" by {author} in https://discord.com/channels/{interaction.guild_id}/{quote_channel.id}!", ephemeral=True)
+        await interaction.response.send_message(f"Added quote \"{text}\" by {author} in https://discord.com/channels/{interaction.guild_id}/{quote_channel.id}!", ephemeral=True, suppress_embeds=True)
 
 
 async def setup(bot: commands.Bot) -> None:
