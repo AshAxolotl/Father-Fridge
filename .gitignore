@@ -1,4 +1,7 @@
 *.log
-*.txt
+in_dev.txt
+token.txt
+commands.txt
 *__pycache__
 *.json
+.venv/
