@@ -59,6 +59,19 @@ def get_contest_winner(self):
         
     else:
         return {"text": "there where no responses to the form :(", "image_url": ""}
+    
+# update suggest themes message
+async def update_suggest_themes_message(self, channel: discord.TextChannel):
+    message: discord.Message  = await channel.fetch_message(self.bot.data["artContestThemeSuggestionsMessage"])
+    embed: discord.Embed = message.embeds[0] # gets the embed that needs to be edited
+
+    # clears all the fields to make sure that 1 person cant suggest more
+    embed.clear_fields()
+    for key in self.bot.data["artContestThemeSuggestions"]:
+        username = self.bot.get_user(int(key)).name
+        embed.add_field(name=self.bot.data["artContestThemeSuggestions"][key], value=f" -{username}", inline=False)
+
+    await message.edit(embed=embed)
 
 
 class ArtContest(commands.GroupCog, name="art"):
@@ -66,27 +79,6 @@ class ArtContest(commands.GroupCog, name="art"):
         self.bot = bot
 
     ## USER COMMANDS
-    # test command
-    @app_commands.command(name="test", description="im going insane")
-    async def test_art(self, interaction: discord.Interaction):
-        # Create New Event For Winner Announcement
-        time_now = discord.utils.utcnow()
-        time_day = next_weekday(time_now, 0) #sets the time to coming monday
-        time_start = time_day.replace(hour=20, minute=0, second=0)
-        time_end = time_day.replace(hour=20, minute=0, second=1)
-
-        await interaction.guild.create_scheduled_event(
-            name="Art Contest: winner announcement",
-            description="vote on winner ig",
-            start_time=time_start,
-            end_time=time_end,
-            privacy_level=PrivacyLevel.guild_only,
-            entity_type=EntityType.external,
-            location="TEST TES TEST"
-        )
-        
-        await interaction.response.send_message(f"succes?", ephemeral=True)
-    
     # Suggest Theme Command
     @app_commands.command(name="suggest", description="suggest a theme!")
     async def suggest(self, interaction: discord.Interaction, theme: app_commands.Range[str, 1, 50]):
@@ -97,17 +89,9 @@ class ArtContest(commands.GroupCog, name="art"):
             if str(self.bot.user.id) in self.bot.data["artContestThemeSuggestions"]:
                 del self.bot.data["artContestThemeSuggestions"][str(self.bot.user.id)] 
             
-            channel: discord.TextChannel = interaction.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
-            message: discord.Message  = await channel.fetch_message(self.bot.data["artContestThemeSuggestionsMessage"])
-            embed: discord.Embed = message.embeds[0] # gets the embed that needs to be edited
+            channel: discord.TextChannel = self.bot.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
+            await update_suggest_themes_message(self, channel=channel)
 
-            # clears all the fields to make sure that 1 person cant suggest more
-            embed.clear_fields()
-            for key in self.bot.data["artContestThemeSuggestions"]:
-                username = self.bot.get_user(int(key)).name
-                embed.add_field(name=self.bot.data["artContestThemeSuggestions"][key], value=f" -{username}", inline=False)
-
-            await message.edit(embed=embed)
             await interaction.response.send_message(f"Successfully added {theme} to the suggestions in https://discord.com/channels/{interaction.guild_id}/{channel.id}", ephemeral=True, suppress_embeds=True)
             write_json_data(self.bot.data)
         else:
@@ -191,7 +175,77 @@ class ArtContest(commands.GroupCog, name="art"):
         if isinstance(error, app_commands.MissingPermissions):
             await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
 
+    # start new
+    @app_commands.command(name="start_new", description="reset suggested themes and makes a new scheduled event for theme announcement")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def start_new(self, interaction: discord.Interaction):
+        # Get channels
+        suggestions_channel: discord.TextChannel = interaction.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
+        announcements_channel: discord.TextChannel = interaction.guild.get_channel(self.bot.data["artContestAnnouncementsChannel"])
 
+
+        # Resets the list of reactions that is being kept to make sure people can only vote 1 thing
+        self.bot.data["artContestThemePollReactions"] = {}
+
+        
+        # Creates a new message for showing suggested themes
+        suggestion_embed = discord.Embed(title="Use /art suggest <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
+        suggestion_embed.set_author(name="Theme Suggestions")
+        suggestion_embed.add_field(name="PLACE HOLDER", value=" -Father Fridge", inline=False)
+        
+        suggestion_message = await suggestions_channel.send(embed=suggestion_embed)
+
+        self.bot.data["artContestThemeSuggestionsMessage"] = suggestion_message.id
+        self.bot.data["artContestThemeSuggestions"] = {str(self.bot.user.id): "PLACE HOLDER"} # clears the theme suggestions
+        write_json_data(self.bot.data)
+
+        # New scheduled event for theme annoucement                   
+        time_now = discord.utils.utcnow()
+        time_day = next_weekday(time_now, 1) # sets the time to coming tuesday
+        time_start = time_day.replace(hour=17, minute=0, second=0)
+        time_end = time_day.replace(hour=17, minute=0, second=1)
+
+        await interaction.guild.create_scheduled_event(
+            name="Art Contest: theme announcement",
+            description="Vote on the theme for the next art contest!",
+            start_time=time_start,
+            end_time=time_end,
+            privacy_level=PrivacyLevel.guild_only,
+            entity_type=EntityType.external,
+            location=f"https://discord.com/channels/{interaction.guild_id}/{announcements_channel.id}"
+        )
+        
+        await interaction.response.send_message(f"Reset suggested themes and made new schedult event", ephemeral=True)
+    
+    @start_new.error
+    async def say_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+
+    # Remove suggestions
+    @app_commands.command(name="remove_suggestion", description="remove a theme suggestion")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def remove_suggestion(self, interaction: discord.Interaction, suggestion: str):
+        if suggestion.lower() != "place holder": 
+            for suggestion_key in self.bot.data["artContestThemeSuggestions"]:
+                if self.bot.data["artContestThemeSuggestions"][suggestion_key].lower() == suggestion.lower():
+                        del self.bot.data["artContestThemeSuggestions"][suggestion_key]
+                        if len(self.bot.data["artContestThemeSuggestions"]) == 0:
+                            self.bot.data["artContestThemeSuggestions"][str(self.bot.user.id)] = "PLACE HOLDER"
+                        
+                        channel: discord.TextChannel = self.bot.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
+                        await update_suggest_themes_message(self, channel=channel)
+                        write_json_data(self.bot.data)
+
+                        await interaction.response.send_message(f"Successfully removed {suggestion} from the suggestions")
+        else:
+            await interaction.response.send_message("You cant remove the place holder!")
+                
+
+    @remove_suggestion.error
+    async def say_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
 
 
 
