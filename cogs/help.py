@@ -16,6 +16,8 @@ class Help(commands.Cog):
         embed.set_author(name="Command List", icon_url=self.bot.user.avatar)
 
         # names on a alphabetical order (A-B-C-D-E-F-G-H-I-J-K-L-M-N-O-P-Q-R-S-T-U-V-W-X-Y-Z)
+        embed.add_field(name="Art", value="submit, suggest\nSubmit a art work when a art contest is going on.\nSuggest a theme for the art contest.", inline=False)
+        embed.add_field(name="Art (admin)", value="recount, remove_suggestion, start_new\nCommands to help with running the art contest", inline=False)
         embed.add_field(name="Balls", value="Dont ask...", inline=False)
         embed.add_field(name="Help", value="Shows you this menu!", inline=False)
         embed.add_field(name="Poll", value="Create polls that can be voted with reactions", inline=False)

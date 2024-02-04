@@ -193,7 +193,7 @@ class ArtContest(commands.GroupCog, name="art"):
         suggestion_embed.set_author(name="Theme Suggestions")
         suggestion_embed.add_field(name="PLACE HOLDER", value=" -Father Fridge", inline=False)
         
-        suggestion_message = await suggestions_channel.send(embed=suggestion_embed)
+        suggestion_message = await suggestions_channel.send(embed=suggestion_embed, silent=True)
 
         self.bot.data["artContestThemeSuggestionsMessage"] = suggestion_message.id
         self.bot.data["artContestThemeSuggestions"] = {str(self.bot.user.id): "PLACE HOLDER"} # clears the theme suggestions
@@ -232,10 +232,12 @@ class ArtContest(commands.GroupCog, name="art"):
                         del self.bot.data["artContestThemeSuggestions"][suggestion_key]
                         if len(self.bot.data["artContestThemeSuggestions"]) == 0:
                             self.bot.data["artContestThemeSuggestions"][str(self.bot.user.id)] = "PLACE HOLDER"
+
+                        write_json_data(self.bot.data)
                         
+                        # update the suggestions message
                         channel: discord.TextChannel = self.bot.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
                         await update_suggest_themes_message(self, channel=channel)
-                        write_json_data(self.bot.data)
 
                         await interaction.response.send_message(f"Successfully removed {suggestion} from the suggestions")
         else:
@@ -311,7 +313,7 @@ class ArtContest(commands.GroupCog, name="art"):
                         poll_embed = discord.Embed(title="", description=poll_options_text, colour=discord.Colour.dark_gold())
                         poll_embed.set_author(name="Vote for the contest theme!")
 
-                        poll_message = await announcements_channel.send(embed=poll_embed)
+                        poll_message = await announcements_channel.send(embed=poll_embed, silent=True)
                         self.bot.data["artContestThemePollMessage"] = poll_message.id
                         
                         # Adds the emojis to the theme poll so it can be voted on
@@ -328,7 +330,7 @@ class ArtContest(commands.GroupCog, name="art"):
                         suggestion_embed.set_author(name="Theme Suggestions")
                         suggestion_embed.add_field(name="PLACE HOLDER", value=" -Father Fridge", inline=False)
                         
-                        suggestion_message = await suggestions_channel.send(embed=suggestion_embed)
+                        suggestion_message = await suggestions_channel.send(embed=suggestion_embed, silent=True)
 
                         self.bot.data["artContestThemeSuggestionsMessage"] = suggestion_message.id
                         self.bot.data["artContestThemeSuggestions"] = {str(self.bot.user.id): "PLACE HOLDER"} # clears the theme suggestions
@@ -466,17 +468,14 @@ def write_json_data(data):
     
 # winner handeling DONE
 # add settings for art contest channels and role DONE
-# clean up the code a bit? 
+# clean up the code a bit? DONE
 # text DONE
 
-# commands to override theme start events and recount winner votes enz
-# forum tags? 
+# commands to override theme start events and recount winner votes enz DONE
 # add pings (problay the final thing to do)
-# add @silent to msgs if possible?
+# add @silent to msgs if possible? DONE
 # update the info channel
 
-
-# make sure people can only vote on 1 thing on the theme voting (PROBLAY JUST SWITCH TO BUTTONS OR MAYBE NOT IM TO TIRED) 
 
 
 
