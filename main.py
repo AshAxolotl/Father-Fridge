@@ -145,9 +145,24 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 ## to do:
 
-# art contest
+# art contest DONE (ADD A COMMAND WITH 3 OPTIONS FOR CREATING A Art Contest: <THEME/winner announcement/ theme announcement>) (MAKE IT SO AFTER A SUGGESTIOS LIST HAS BEEN USED IT CHANCES THE COLOR OF THE EMBED TO GRAYISH)
 
-# beter way of "syncing" the data.json or maybe even switching to sql or something IDK
+
+# ROAD MAP:
+# 1. learn sql basics
+# 2. switch to sql
+# 2.5 make sure the sql works with the bot being in multiable guilds
+# 3. change the sync command to work beter with more guilds
+# 4. move stuff that isnt guild spesifc: TOKEN, origin_form_id, in_dev? enz to a config.json(?) file (idk if the service_account.json should be in there)
+
+# note: find a good way to sync or make sure the data base is hosted on the remote server
+
+
+
+
+# THINGS TO DO AFTER ROAD MAP IS DONE:
+
+
 
 # POLL COMMAND v2: switch to buttons?
 
@@ -156,9 +171,6 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 ## random things to look into:
 
-# event helper??? (like discord EVENTS the button at the top of all the channels)
-# markdown in messages?
-
-# move all the json stuff into another script?
+# check out moduls
 
 # beter profile pic for bot

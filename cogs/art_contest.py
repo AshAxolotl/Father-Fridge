@@ -5,7 +5,7 @@ import datetime
 import json
 from random import choice
 import google.google_api_stuff as google_api_stuff
-from typing import Optional
+from typing import Optional, Literal
 
 
 # function for setting a datetime to a spesfic day next week
@@ -183,11 +183,9 @@ class ArtContest(commands.GroupCog, name="art"):
         suggestions_channel: discord.TextChannel = interaction.guild.get_channel(self.bot.data["artContestThemeSuggestionsChannel"])
         announcements_channel: discord.TextChannel = interaction.guild.get_channel(self.bot.data["artContestAnnouncementsChannel"])
 
-
         # Resets the list of reactions that is being kept to make sure people can only vote 1 thing
         self.bot.data["artContestThemePollReactions"] = {}
 
-        
         # Creates a new message for showing suggested themes
         suggestion_embed = discord.Embed(title="Use /art suggest <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
         suggestion_embed.set_author(name="Theme Suggestions")
@@ -221,6 +219,71 @@ class ArtContest(commands.GroupCog, name="art"):
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
             await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+    
+    # create event command (WIP THIS CODE IS SHIT AND SHOULD BE REPLACED)
+    @app_commands.command("create_event", description="make a scheduled event")
+    @app_commands.cehcks.has_permissions(administrator=True)
+    async def create_event(self, interaction: discord.Interaction, event: Literal["winner", "theme", "active"]):
+        if event == "winner":
+            # Create New Event For Winner Announcement
+            time_now = discord.utils.utcnow()
+            time_day = next_weekday(time_now, 0) #sets the time to coming monday
+            time_start = time_day.replace(hour=20, minute=0, second=0)
+            time_end = time_day.replace(hour=20, minute=0, second=1)
+
+            await interaction.guild.create_scheduled_event(
+                name="Art Contest: winner announcement",
+                description="Vote on the art contest winner!",
+                start_time=time_start,
+                end_time=time_end,
+                privacy_level=PrivacyLevel.guild_only,
+                entity_type=EntityType.external,
+                location="MADE USING COMMAND"
+        )
+        
+        elif event == "theme":
+            # New scheduled event for theme annoucement                   
+            time_now = discord.utils.utcnow()
+            time_day = next_weekday(time_now, 1) # sets the time to coming tuesday
+            time_start = time_day.replace(hour=17, minute=0, second=0)
+            time_end = time_day.replace(hour=17, minute=0, second=1)
+
+            await interaction.guild.create_scheduled_event(
+                name="Art Contest: theme announcement",
+                description="Vote on the theme for the next art contest!",
+                start_time=time_start,
+                end_time=time_end,
+                privacy_level=PrivacyLevel.guild_only,
+                entity_type=EntityType.external,
+                location="MADE USING COMMAND"
+            )
+            
+
+        else:
+            # Create New Event For Art Contest
+            time_now = discord.utils.utcnow()
+            time_start = time_now + datetime.timedelta(seconds=10)
+
+            time_day = next_weekday(time_now, 6) # sets the time to coming sunday
+            time_end = time_day.replace(hour=22, minute=59, second=0)
+
+            await interaction.guild.create_scheduled_event(
+                name=f"Art Contest: {self.bot.data['artContestTheme']}",
+                description="Make art using the theme!\nFor more information check the info channel!",
+                start_time=time_start,
+                end_time=time_end,
+                privacy_level=PrivacyLevel.guild_only,
+                entity_type=EntityType.external,
+                location="MADE USING COMMAND"
+            )
+
+
+    @create_event.error
+    async def say_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+    
+
 
     # Remove suggestions
     @app_commands.command(name="remove_suggestion", description="remove a theme suggestion")
