@@ -221,7 +221,7 @@ class ArtContest(commands.GroupCog, name="art"):
             await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
     
     # create event command (WIP THIS CODE IS SHIT AND SHOULD BE REPLACED)
-    @app_commands.command("create_event", description="make a scheduled event")
+    @app_commands.command(name="create_event", description="make a scheduled event")
     @app_commands.checks.has_permissions(administrator=True)
     async def create_event(self, interaction: discord.Interaction, event: Literal["winner", "theme", "active"]):
         if event == "winner":
@@ -276,6 +276,7 @@ class ArtContest(commands.GroupCog, name="art"):
                 entity_type=EntityType.external,
                 location="MADE USING COMMAND"
             )
+        await interaction.response.send_message("succes?")
 
 
     @create_event.error
