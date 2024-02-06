@@ -17,11 +17,11 @@ def next_weekday(d, weekday):
 
 
 
-def get_contest_winner(self):
+async def get_contest_winner(self):
     try:
         # get form responses
         service = google_api_stuff.create_service(type="forms", version="v1")
-        results = service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute()
+        results = await service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute() # WIP should this even be await?
     
         # handle responses
         if "responses" in results: # checks if there where any responses on the form
@@ -156,7 +156,7 @@ class ArtContest(commands.GroupCog, name="art"):
             self.bot.data["artContestSubmissions"][submission_key]["points"] = 0
             self.bot.data["artContestSubmissions"][submission_key]["max_points"] = 0
 
-        winner_embed_info = get_contest_winner(self)
+        winner_embed_info = await get_contest_winner(self)
             
         winner_embed = discord.Embed(title="", description=winner_embed_info["text"], colour=discord.Colour.dark_gold())
         winner_embed.set_author(name=f"Voting Recount!", url=self.bot.data["artContestResponderUri"])
@@ -276,7 +276,7 @@ class ArtContest(commands.GroupCog, name="art"):
                 entity_type=EntityType.external,
                 location="MADE USING COMMAND"
             )
-        await interaction.response.send_message("succes?")
+        await interaction.response.send_message("succes?", ephemeral=True)
 
 
     @create_event.error
@@ -355,7 +355,7 @@ class ArtContest(commands.GroupCog, name="art"):
                         announcements_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestAnnouncementsChannel"])
 
                         # Get winner
-                        winner_embed_info = get_contest_winner(self)
+                        winner_embed_info = await get_contest_winner(self)
                             
                         winner_embed = discord.Embed(title="", description=winner_embed_info["text"], colour=discord.Colour.dark_gold())
                         winner_embed.set_author(name=f"Voting Results: {theme}", url=self.bot.data["artContestResponderUri"])
