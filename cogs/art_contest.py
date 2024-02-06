@@ -222,7 +222,7 @@ class ArtContest(commands.GroupCog, name="art"):
     
     # create event command (WIP THIS CODE IS SHIT AND SHOULD BE REPLACED)
     @app_commands.command("create_event", description="make a scheduled event")
-    @app_commands.cehcks.has_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
     async def create_event(self, interaction: discord.Interaction, event: Literal["winner", "theme", "active"]):
         if event == "winner":
             # Create New Event For Winner Announcement
