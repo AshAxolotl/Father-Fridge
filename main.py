@@ -157,6 +157,14 @@ bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
 
 # note: find a good way to sync or make sure the data base is hosted on the remote server
 
+# list of commands that need to be per guild:
+# /settings
+# /reactionrole
+# /art
+# /poll (needs to be fully redone anyways)
+# /wmoji
+
+# 
 
 
 

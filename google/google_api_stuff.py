@@ -32,9 +32,15 @@ def create_form(data) -> dict:
         print("An unknown error occurred while coping the base form")
         return origin_file_id
 
+    update_form(form_id=copy_results["id"], data=data)
+
+
+
+def update_form(form_id, data) -> dict:
     try: 
         # Update to the form to add description and base quistion
-        forms_service = create_service(type="forms", version="v1") 
+        forms_service = create_service(type="forms", version="v1")
+        theme = data["artContestTheme"]
 
         form_update = { 
             "requests": [
@@ -110,13 +116,12 @@ def create_form(data) -> dict:
             )
 
         # Update the form with the form_update
-        forms_service.forms().batchUpdate(formId=copy_results["id"], body=form_update).execute()
-        form_data = forms_service.forms().get(formId=copy_results["id"]).execute()
+        forms_service.forms().batchUpdate(formId=form_id, body=form_update).execute()
+        form_data = forms_service.forms().get(formId=form_id).execute()
         return {"formId": form_data["formId"], "responderUri": form_data["responderUri"]}
     
     except HttpError as error:
         print(f"An error occurred while updating the form: {error}")
-        return origin_file_id
     except:
         print("An unknown error occurred while updating the form")
         return origin_file_id

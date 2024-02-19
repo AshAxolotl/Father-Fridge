@@ -16,6 +16,17 @@ def next_weekday(d, weekday):
     return d + datetime.timedelta(days_ahead)
 
 
+async def announce_winner_form(self, create_result): 
+    announcements_channel: discord.TextChannel = self.bot.get_channel(self.bot.data["artContestAnnouncementsChannel"])
+    responer_url = create_result["responderUri"]
+
+    self.bot.data["artContestResponderUri"] = responer_url
+    self.bot.data["artContestFormId"] = create_result["formId"]
+    self.bot.data["artContestActive"] = False
+    write_json_data(self.bot.data)
+
+    await announcements_channel.send(f"<@&{self.bot.data['artContestRole']}> Vote on the art here: [google form]({responer_url})")
+
 
 async def get_contest_winner(self):
     try:
@@ -283,6 +294,20 @@ class ArtContest(commands.GroupCog, name="art"):
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
             await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+
+    
+    # update form
+    @app_commands.command(name="update_form", description="update the form")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def update_form(self, interaction: discord.Interaction, form_id: str):
+        update_result = google_api_stuff.update_form(form_id=form_id, data=self.bot.data)
+        await announce_winner_form(self, update_result)
+        interaction.response.send_message(f"tried to update form with id: {form_id}", ephemeral=True)
+
+    @update_form.error
+    async def say_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
     
 
 
@@ -479,18 +504,10 @@ class ArtContest(commands.GroupCog, name="art"):
                 if before.status == EventStatus.active:
                     if after.status == EventStatus.completed:
                         # Get channel
-                        announcements_channel: discord.TextChannel = before.guild.get_channel(self.bot.data["artContestAnnouncementsChannel"])
 
                         create_result = google_api_stuff.create_form(self.bot.data)
 
-                        responer_url = create_result["responderUri"]
-
-                        self.bot.data["artContestResponderUri"] = responer_url
-                        self.bot.data["artContestFormId"] = create_result["formId"]
-                        self.bot.data["artContestActive"] = False
-                        write_json_data(self.bot.data)
-
-                        await announcements_channel.send(f"<@&{self.bot.data['artContestRole']}> Vote on the art here: [google form]({responer_url})")
+                        await announce_winner_form(self, create_result)
 
                         # Create New Event For Winner Announcement
                         time_now = discord.utils.utcnow()
@@ -505,7 +522,7 @@ class ArtContest(commands.GroupCog, name="art"):
                             end_time=time_end,
                             privacy_level=PrivacyLevel.guild_only,
                             entity_type=EntityType.external,
-                            location=responer_url
+                            location="Checks art contest announcements!"
                         )
 
                         
