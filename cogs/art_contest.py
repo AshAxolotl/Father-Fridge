@@ -5,6 +5,7 @@ import datetime
 import json
 from random import choice
 import google.google_api_stuff as google_api_stuff
+from googleapiclient.errors import HttpError
 from typing import Optional, Literal
 
 
@@ -32,8 +33,8 @@ async def get_contest_winner(self):
     try:
         # get form responses
         service = google_api_stuff.create_service(type="forms", version="v1")
-        results = await service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute() # WIP should this even be await?
-    
+        results = service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute()
+
         # handle responses
         if "responses" in results: # checks if there where any responses on the form
             for response in results["responses"]:
@@ -50,8 +51,11 @@ async def get_contest_winner(self):
 
             # creates a sorted list of tuples with [0] being the ID and [1] all of the data (most defintly not the best way of doing this but i have no idea how to do it beter and it works)
             sorted_submissions = sorted(self.bot.data["artContestSubmissions"].items(), key=lambda x: x[1]["score"], reverse=True)
+    except HttpError as error:
+        print(f"The Form for winner could not be found: {error}")
+        sorted_submissions = None
     except:
-        print("The Form for winner could not be found")
+        print(f"unknwon error with getting for data for winning announcement")
         sorted_submissions = None
 
     # create embed text
