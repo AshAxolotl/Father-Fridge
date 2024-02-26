@@ -32,7 +32,7 @@ def create_form(data) -> dict:
         print("An unknown error occurred while coping the base form")
         return origin_file_id
 
-    update_form(form_id=copy_results["id"], data=data)
+    return update_form(form_id=copy_results["id"], data=data)
 
 
 
@@ -122,6 +122,7 @@ def update_form(form_id, data) -> dict:
     
     except HttpError as error:
         print(f"An error occurred while updating the form: {error}")
+        return origin_file_id
     except:
         print("An unknown error occurred while updating the form")
         return origin_file_id
