@@ -6,28 +6,22 @@ import discord
 from discord.ext import commands
 import asyncio
 import logging
-
-
-
+from bot_config import TOKEN, DEBUG, OWNER_USERIDS, COMMAND_PREFIX
 
 # Bot Activity
-if os.path.isfile("./in_dev.txt"):
-    activity = discord.Activity(name="IN DEV (WONT SAFE!!)", type=discord.ActivityType.streaming)
+if DEBUG:
+    activity = discord.CustomActivity(name="IN DEV")
+    status = discord.Status.dnd
+    log_level = logging.DEBUG
 else:
     activity = discord.Activity(name="over all", type=discord.ActivityType.watching)
-
+    status = discord.Status.online
+    log_level = logging.ERROR
 
 
 # Setting up Discord Bot Manager Class and Command Handler
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), activity=activity)
-
-# Conts
-HANDLER = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-with open("token.txt", "r") as file:
-    TOKEN = file.read()
-
-bot.OWNER_USERIDS = [461084048337403915] 
-
+bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all(), activity=activity, status=status)
+bot.owner_ids = OWNER_USERIDS
 
 # data gets stored in json so should be used for saved data (like settings)
 bot.data = {
@@ -140,7 +134,7 @@ async def quote(interaction: discord.Interaction, message: discord.Message):
 
 # running the bot
 asyncio.run(load_cogs())
-bot.run(TOKEN, log_handler=HANDLER, log_level=logging.DEBUG)
+bot.run(TOKEN, log_handler=logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'), log_level=log_level)
 
 
 ## to do:

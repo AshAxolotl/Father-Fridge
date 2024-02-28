@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import json
+from bot_config import OWNER_USERIDS
 
 class OwnerCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -9,7 +10,7 @@ class OwnerCommands(commands.Cog):
     #sync commands
     @commands.command()
     async def sync_cmds(self, ctx):
-        if ctx.author.id in self.bot.OWNER_USERIDS:
+        if ctx.author.id in OWNER_USERIDS:
             print("Synced Commands")
             await self.bot.tree.sync()
             await ctx.send("Command tree sycned")
@@ -19,7 +20,7 @@ class OwnerCommands(commands.Cog):
     #shutdown bot
     @commands.command()
     async def shutdown(self, ctx):
-        if ctx.author.id in self.bot.OWNER_USERIDS:
+        if ctx.author.id in OWNER_USERIDS:
             print("Shutting Down from command")
             await ctx.send("Shutting Down")
             write_json_data(self.bot.data)

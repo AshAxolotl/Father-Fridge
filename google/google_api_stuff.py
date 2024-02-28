@@ -1,15 +1,14 @@
 from googleapiclient.discovery import build  # Added
 from google.oauth2 import service_account
 from googleapiclient.errors import HttpError
+from bot_config import BASE_FORM_ID
 
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 creds = service_account.Credentials.from_service_account_file("google/service_account.json")
 
-origin_file_id = {"formId": "ID_HERE", "responderUri": "https://docs.google.com/forms/d/e/ERROR/viewform"}
-with open("google/base_form_id.txt", "r") as file:
-    origin_file_id["formId"] = file.read()
+origin_file_id = {"formId": BASE_FORM_ID, "responderUri": "https://docs.google.com/forms/d/e/ERROR/viewform"}
 
 # Create service 
 def create_service(type: str, version: str):
