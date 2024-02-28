@@ -1,7 +1,5 @@
 *.log
 bot_config.py
-commands.txt
-base_form_id.txt
 *__pycache__
 *.json
 .venv/

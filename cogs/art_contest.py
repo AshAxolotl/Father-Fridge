@@ -4,7 +4,7 @@ from discord import EventStatus, app_commands, EntityType, PrivacyLevel
 import datetime
 import json
 from random import choice
-import google.google_api_stuff as google_api_stuff
+import google_api_stuff as google_api_stuff
 from googleapiclient.errors import HttpError
 from typing import Optional, Literal
 

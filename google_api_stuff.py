@@ -1,12 +1,12 @@
 from googleapiclient.discovery import build  # Added
 from google.oauth2 import service_account
 from googleapiclient.errors import HttpError
-from bot_config import BASE_FORM_ID
+from bot_config import BASE_FORM_ID, SERVICE_ACCOUNT
 
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/drive"]
-creds = service_account.Credentials.from_service_account_file("google/service_account.json")
+creds = service_account.Credentials.from_service_account_info(SERVICE_ACCOUNT)
 
 origin_file_id = {"formId": BASE_FORM_ID, "responderUri": "https://docs.google.com/forms/d/e/ERROR/viewform"}
 
@@ -141,7 +141,7 @@ def delete_place_holder_forms():
             return
         print("Files:")
         for item in items:
-            if item["name"] in ["Art Contest: PLACE HOLDER", "Art Contest: Test Theme", "Art Contest: THEME"]:
+            if item["name"] in ["Art Contest: PLACE HOLDER", "Art Contest: Test Theme", "Art Contest: THEME", "Art Contest: test"]:
                 drive_service.files().delete(fileId=item["id"]).execute()
             else:
                 print(f"{item['name']} ({item['id']})")
