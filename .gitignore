@@ -1,5 +1,7 @@
 *.log
 bot_config.py
+sql_test.py
+commands.txt
 *__pycache__
 *.json
 .venv/

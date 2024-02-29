@@ -24,6 +24,7 @@ class OwnerCommands(commands.Cog):
             print("Shutting Down from command")
             await ctx.send("Shutting Down")
             write_json_data(self.bot.data)
+            await self.bot.pool.close()
             await self.bot.close()
         else:
             await ctx.send("thy are not the one that shaped me")

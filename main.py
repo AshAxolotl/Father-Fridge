@@ -6,7 +6,10 @@ import discord
 from discord.ext import commands
 import asyncio
 import logging
-from bot_config import TOKEN, DEBUG, OWNER_USERIDS, COMMAND_PREFIX
+import asyncpg
+from bot_config import TOKEN, DEBUG, OWNER_USERIDS, COMMAND_PREFIX, SQL_IP, SQL_USER, SQL_PASSWORD, SQL_PORT
+import datetime
+
 
 # Bot Activity
 if DEBUG:
@@ -22,6 +25,10 @@ else:
 # Setting up Discord Bot Manager Class and Command Handler
 bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all(), activity=activity, status=status)
 bot.owner_ids = OWNER_USERIDS
+
+# PostgreSQL setup
+async def setup_db() -> asyncpg.Connection:
+    return await asyncpg.connect(f'postgresql://{SQL_USER}@{SQL_IP}/fatherfridgedb', password=SQL_PASSWORD)
 
 # data gets stored in json so should be used for saved data (like settings)
 bot.data = {
@@ -95,6 +102,15 @@ write_json_data()
 
 
 ## BOT EVENTS
+
+# setup hooks
+@bot.event
+async def setup_hook():
+    await load_cogs()
+    bot.pool = await asyncpg.create_pool(dsn=f"postgres://{SQL_USER}:{SQL_PASSWORD}@{SQL_IP}:{SQL_PORT}/fatherfridgedb")
+    
+    
+
 # start up message
 @bot.event
 async def on_ready():
@@ -130,49 +146,64 @@ async def quote(interaction: discord.Interaction, message: discord.Message):
     await quote_channel.send(embed=embed)
     await interaction.response.send_message(f"Added quote \"{message.content}\" by {message.author.name} in #{quote_channel}!", ephemeral=True)
 
+#sql test
+@bot.command()
+async def sql(ctx):
+    if ctx.author.id in OWNER_USERIDS:
+        # async with bot.pool.acquire() as connection:
+            # async with connection.transaction():
+        await bot.pool.execute('''
+            INSERT INTO users(name, dob) VALUES($1, $2)''',
+            'test', datetime.date(1984, 3, 1))
+        
+        await ctx.send("TEST?")
+    else:
+        await ctx.send("thy are not the one that shaped me")
 
 
-# running the bot
-asyncio.run(load_cogs())
 bot.run(TOKEN, log_handler=logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'), log_level=log_level)
 
 
-## to do:
 
-# art contest DONE (ADD A COMMAND WITH 3 OPTIONS FOR CREATING A Art Contest: <THEME/winner announcement/ theme announcement>) (MAKE IT SO AFTER A SUGGESTIOS LIST HAS BEEN USED IT CHANCES THE COLOR OF THE EMBED TO GRAYISH)
+# TODO:
+"""
 
+# art contest DONE (ADD A COMMAND WITH 3 OPTIONS FOR CREATING A Art Contest: <THEME/winner announcement/ theme announcement>)
 
 # ROAD MAP:
-# 1. learn sql basics
-# 2. switch to sql
-# 2.5 make sure the sql works with the bot being in multiable guilds
-# 3. change the sync command to work beter with more guilds
-# 4. move stuff that isnt guild spesifc: TOKEN, origin_form_id, in_dev? enz to a config.json(?) file (idk if the service_account.json should be in there)
+1. learn sql basics DONE
+2. switch to sql (make sure the sql works with the bot being in multiable guilds)
+2.1: create a database DONE
+2.2 setup pgadmin to view and manage the database DONE
+2.3 make it work with python DONE
+2.4 make it work with python + async DONE
+2.5 make it work with the bot...
+2.6 move something basic to database
 
-# note: find a good way to sync or make sure the data base is hosted on the remote server
+2.7 MOVE THE REST!!!
 
-# list of commands that need to be per guild:
-# /settings
-# /reactionrole
-# /art
-# /poll (needs to be fully redone anyways)
-# /wmoji
+3. change the sync command to work beter with more guilds
+4. move stuff that isnt guild spesifc: TOKEN, origin_form_id, in_dev? enz to a config.json(?) file (idk if the service_account.json should be in there) DONE
 
-# 
+note: find a good way to sync or make sure the data base is hosted on the remote server
 
+- list of commands that need to be per guild:
+- /settings
+- /reactionrole
+- /art
+- /poll (needs to be fully redone anyways)
+- /wmoji
 
 
 # THINGS TO DO AFTER ROAD MAP IS DONE:
+POLL COMMAND v2: switch to buttons?
+
+send msg when they join guild?
 
 
+# random things to look into:
 
-# POLL COMMAND v2: switch to buttons?
+check out moduls
 
-# send msg when they join guild?
-
-
-## random things to look into:
-
-# check out moduls
-
-# beter profile pic for bot
+beter profile pic for bot
+"""
