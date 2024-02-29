@@ -31,3 +31,14 @@
    ```
    $ pip install -r requirements.txt
    ```
+
+
+## Setup Postgresql
+##### 1. Install Postgresql (it might work with something else)
+##### 2. Create database and user
+```sql
+CREATE DATABASE fatherfridgedb;
+CREATE USER <user> WITH PASSWORD <password>;
+GRANT ALL PRIVILEGES ON DATABASE fatherfridgedb TO <user>; (You probably dont want to give the bot all privileges)
+
+```
