@@ -19,6 +19,12 @@
    # Google forms
    BASE_FORM_ID = ""
    SERVICE_ACCOUNT = {}
+   
+   # PostgreSQL
+   SQL_IP = "127.0.0.1"
+   SQL_PORT = ""
+   SQL_USER = ""
+   SQL_PASSWORD = ""
    ```
 
 ##### 2. Create virtual environment:
