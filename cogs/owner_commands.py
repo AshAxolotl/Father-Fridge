@@ -23,7 +23,6 @@ class OwnerCommands(commands.Cog):
         if ctx.author.id in OWNER_USERIDS:
             print("Shutting Down from command")
             await ctx.send("Shutting Down")
-            write_json_data(self.bot.data)
             await self.bot.pool.close()
             await self.bot.close()
         else:
@@ -33,9 +32,3 @@ class OwnerCommands(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(OwnerCommands(bot))
-
-# json write (for cogs)
-def write_json_data(data):
-    data_json = json.dumps(data, indent=4)
-    with open("data.json", "w") as file:
-        file.write(data_json)

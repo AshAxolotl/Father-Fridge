@@ -14,7 +14,8 @@
    COMMAND_PREFIX = "!" 
    
    # Extra Settings 
-   OWNER_USERIDS = {}
+   OWNER_USERIDS = {} # Set
+   NO_PERMS_MESSAGE = ""
    
    # Google forms
    BASE_FORM_ID = ""

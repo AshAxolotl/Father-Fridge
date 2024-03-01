@@ -7,6 +7,7 @@ from random import choice
 import google_api_stuff as google_api_stuff
 from googleapiclient.errors import HttpError
 from typing import Optional, Literal
+from bot_config import NO_PERMS_MESSAGE
 
 
 # function for setting a datetime to a spesfic day next week
@@ -188,7 +189,7 @@ class ArtContest(commands.GroupCog, name="art"):
     @recount.error
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
     # start new
     @app_commands.command(name="start_new", description="reset suggested themes and makes a new scheduled event for theme announcement")
@@ -233,7 +234,7 @@ class ArtContest(commands.GroupCog, name="art"):
     @start_new.error
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
     
     # create event command (WIP THIS CODE IS SHIT AND SHOULD BE REPLACED)
     @app_commands.command(name="create_event", description="make a scheduled event")
@@ -297,7 +298,7 @@ class ArtContest(commands.GroupCog, name="art"):
     @create_event.error
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
     
     # update form
@@ -311,7 +312,7 @@ class ArtContest(commands.GroupCog, name="art"):
     @update_form.error
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
     
 
 
@@ -340,7 +341,7 @@ class ArtContest(commands.GroupCog, name="art"):
     @remove_suggestion.error
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
 
 

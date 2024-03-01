@@ -31,7 +31,7 @@ bot.data = {
     "joinRole": 1171095238929039360, # DONE
     "webtoons": ["https://www.webtoons.com/en/thriller/school-bus-graveyard/list?title_no=2705"], # REMOVE?
     "reactionRoles": {}, 
-    "wordEmojis": {"cheese": "🧀"},
+    "wordEmojis": {"cheese": "🧀"}, # DONE
     "quoteChannel": 1185960968140898325, # DONE
     "artContestActive": False,
     "artContestTheme": "Cheese",
@@ -197,8 +197,8 @@ bot.run(TOKEN, log_handler=logging.FileHandler(filename='discord.log', encoding=
 2.2 setup pgadmin to view and manage the database DONE
 2.3 make it work with python DONE
 2.4 make it work with python + async DONE
-2.5 make it work with the bot...
-2.6 move something basic to database
+2.5 make it work with the bot... DONE
+2.6 move something basic to database DONE
 
 2.7 MOVE THE REST!!!
 
@@ -208,9 +208,9 @@ bot.run(TOKEN, log_handler=logging.FileHandler(filename='discord.log', encoding=
 note: find a good way to sync or make sure the data base is hosted on the remote server
 
 - list of commands that need to be per guild:
-- /settings
-- /reactionrole
-- /wmoji
+- /settings DONE
+- /reactionrole 
+- /wmoji DONE
 - /art
 
 

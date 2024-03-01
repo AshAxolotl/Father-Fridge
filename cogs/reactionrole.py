@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 import json
 from typing import Optional
+from bot_config import NO_PERMS_MESSAGE
 
 
 class ReactionRole(commands.GroupCog, name="reactionrole"):
@@ -63,7 +64,7 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
     @reaction_role_add.error
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
         
 
     # reaction role remove
@@ -94,7 +95,7 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
     @reaction_role_remove.error
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
     # reaction role list
     @app_commands.command(name="list", description="lists the reaction roles")

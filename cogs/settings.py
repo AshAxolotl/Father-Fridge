@@ -4,7 +4,7 @@ from discord import app_commands, ChannelType
 from discord.ext import commands
 from discord.ui import ChannelSelect
 from typing import Any, List, Union
-import asyncio
+from bot_config import NO_PERMS_MESSAGE
 
 # BASE MENU seen when using /settings
 baseMenuEmbed = discord.Embed(
@@ -198,7 +198,7 @@ class Settings(commands.Cog):
     @settings.error
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message("You do not have the perms for this (L bozo go cry about it)!", ephemeral=True)
+            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
 
 
