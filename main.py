@@ -4,11 +4,9 @@ import os.path
 # import base64
 import discord
 from discord.ext import commands
-import asyncio
 import logging
 import asyncpg
 from bot_config import TOKEN, DEBUG, OWNER_USERIDS, COMMAND_PREFIX, SQL_IP, SQL_USER, SQL_PASSWORD, SQL_PORT
-import datetime
 
 
 # Bot Activity
@@ -30,7 +28,7 @@ bot.owner_ids = OWNER_USERIDS
 bot.data = {
     "joinRole": 1171095238929039360, # DONE
     "webtoons": ["https://www.webtoons.com/en/thriller/school-bus-graveyard/list?title_no=2705"], # REMOVE?
-    "reactionRoles": {}, 
+    "reactionRoles": {},  # DONE
     "wordEmojis": {"cheese": "🧀"}, # DONE
     "quoteChannel": 1185960968140898325, # DONE
     "artContestActive": False,
@@ -115,6 +113,13 @@ async def setup_hook():
             guild_id bigint,
             word TEXT,
             emoji TEXT
+        );
+        CREATE TABLE IF NOT EXISTS reaction_roles (
+            guild_id bigint,
+            message_id bigint,
+            emoji TEXT,
+            role_id bigint,
+            channel_id bigint
         );
     """)
 
@@ -209,15 +214,17 @@ note: find a good way to sync or make sure the data base is hosted on the remote
 
 - list of commands that need to be per guild:
 - /settings DONE
-- /reactionrole 
-- /wmoji DONE
+- /reactionrole DONE
+- /wmoji DONE SORTA: Make it so wmoji uses id for custom emojis instaid of the full thing so it doesnt break on name change?
 - /art
 
 
 
 # THINGS TO DO AFTER ROAD MAP IS DONE:
 
-create a setup guide for myself
+
+
+create a setup guide for myself DONE
 
 POLL COMMAND v2: switch to buttons?
 
