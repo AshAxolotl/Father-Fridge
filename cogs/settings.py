@@ -4,6 +4,7 @@ from discord import app_commands, ChannelType
 from discord.ext import commands
 from discord.ui import ChannelSelect
 from typing import Any, List, Union
+import asyncio
 
 # BASE MENU seen when using /settings
 baseMenuEmbed = discord.Embed(
@@ -11,6 +12,7 @@ baseMenuEmbed = discord.Embed(
         title="Settings: Start Menu",
         description="SETTINGS",
 )
+
 
 class BaseMenuView(discord.ui.View):
     def __init__(self, interaction: discord.Interaction):
@@ -25,7 +27,8 @@ class BaseMenuView(discord.ui.View):
     # Join Role
     @discord.ui.button(label="Join Role", style=discord.ButtonStyle.blurple)
     async def join_role(self, interaction: discord.Interaction, button: discord.ui.Button):
-        view = DropdownView(dropdown=[JoinRoleDropdown(self.interaction)])
+        role_id = await interaction.client.pool.fetchval(f"SELECT join_role_id FROM settings WHERE guild_id = '{interaction.guild_id}'")
+        view = DropdownView(dropdown=[JoinRoleDropdown(self.interaction, role_id)])
         embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Join Role", description="Set the role that users should get when they join the guild.")
         await interaction.response.edit_message(view=view, embed=embed)
         self.stop()
@@ -33,7 +36,8 @@ class BaseMenuView(discord.ui.View):
     #Quote Channel
     @discord.ui.button(label="Quote Channel", style=discord.ButtonStyle.blurple)
     async def quote_channel(self, interaction: discord.Interaction, button: discord.ui.Button):
-        view = DropdownView(dropdown=[QuoteChannelDropdown(self.interaction)])
+        quote_channel_id = await interaction.client.pool.fetchval(f"SELECT quote_channel_id FROM settings WHERE guild_id = '{interaction.guild_id}'")
+        view = DropdownView(dropdown=[QuoteChannelDropdown(self.interaction, quote_channel_id)])
         embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Quote Channel", description="Set the channel where quotes will go")
         await interaction.response.edit_message(view=view, embed=embed)
         self.stop()
@@ -65,8 +69,8 @@ class DropdownView(discord.ui.View):
 
 # Join Role Dropdown
 class JoinRoleDropdown(discord.ui.RoleSelect):
-    def __init__(self, interaction: discord.Interaction):
-        role = interaction.guild.get_role(interaction.client.data["joinRole"])
+    def __init__(self, interaction: discord.Interaction, role_id):
+        role = interaction.guild.get_role(role_id)
         super().__init__(placeholder=f"Join Role: {role}", min_values=1, max_values=1)
         
     async def callback(self, interaction: discord.Interaction):
@@ -75,15 +79,18 @@ class JoinRoleDropdown(discord.ui.RoleSelect):
             role
             for role in roles
         ]
-        interaction.client.data["joinRole"] = selected_roles[0].id
-        write_json_data(interaction.client.data)
+        await interaction.client.pool.execute(f"""
+            UPDATE settings
+            SET join_role_id = {selected_roles[0].id}
+            WHERE guild_id = {interaction.guild_id}
+        """)
         await interaction.response.send_message(f"Successfully set join role to <@&{selected_roles[0].id}>", ephemeral=True)
 
 
 # Quote Channel Dropdown
 class QuoteChannelDropdown(discord.ui.ChannelSelect):
-    def __init__(self, interaction: discord.Interaction):
-        channel = interaction.guild.get_channel(interaction.client.data["quoteChannel"])
+    def __init__(self, interaction: discord.Interaction, quote_channel_id):
+        channel = interaction.guild.get_channel(quote_channel_id)
         super().__init__(placeholder=f"Quote Channel: {channel}", min_values=1, max_values=1, channel_types=[ChannelType.text])
         
     async def callback(self, interaction: discord.Interaction):
@@ -93,8 +100,11 @@ class QuoteChannelDropdown(discord.ui.ChannelSelect):
             for channel in channels
         ]
 
-        interaction.client.data["quoteChannel"] = selected_channels[0].id
-        write_json_data(interaction.client.data)
+        await interaction.client.pool.execute(f"""
+            UPDATE settings
+            SET quote_channel_id = {selected_channels[0].id}
+            WHERE guild_id = {interaction.guild_id}
+        """)
         await interaction.response.send_message(f"Successfully set quote channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True, suppress_embeds=True)
 
 # Art Contest Announcements Channel Dropdown

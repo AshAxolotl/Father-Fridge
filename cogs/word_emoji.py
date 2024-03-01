@@ -15,11 +15,13 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
   @commands.Cog.listener()
   async def on_message(self, message:discord.Message): 
     if message.author != self.bot.user:
-      # word emojis
-      for key in self.bot.data["wordEmojis"]:
-        if key in message.content.lower():
-          for emoji in self.bot.data["wordEmojis"][key]:
-            await message.add_reaction(emoji)
+      emojis_records = await self.bot.pool.fetch(f"""
+      SELECT emoji FROM wmojis
+      WHERE guild_id = {message.guild.id} AND $1 LIKE '%' || word || '%';
+      """, message.content.lower())
+
+      for emoji_record in emojis_records:
+        await message.add_reaction(emoji_record["emoji"])
       
 
   ## COMMANDS
@@ -32,51 +34,82 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
     if len(word) < 3:
       await interaction.response.send_message(f"{word} is shoter then 3 character!", ephemeral=True)
       return
-
-    if word not in self.bot.data["wordEmojis"]:
-      self.bot.data["wordEmojis"][word] = []
-
-    if emoji not in self.bot.data["wordEmojis"][word] and len(self.bot.data["wordEmojis"][word]) < 10:
-      self.bot.data["wordEmojis"][word].append(emoji)
-      write_json_data(self.bot.data)
-      await interaction.response.send_message(f"{emoji} will get added on word: {word}")
-    else:
-      await interaction.response.send_message(f"{emoji} already gets added to {word} or the word {word} already has 10 emojis", ephemeral=True)
     
+    # check for emoji (TODO this could be beter)
+    if " " in emoji:
+      await interaction.response.send_message(f"{emoji} is not valid!", ephemeral=True)
+      return
+
+    current_wmojis_records = await self.bot.pool.fetch(f"""
+      SELECT emoji FROM wmojis
+      WHERE guild_id = {interaction.guild_id} AND word = $1;
+    """, word)
+
+    # check if there are already 10 emojis on the word
+    if len(current_wmojis_records) >= 10:
+      await interaction.response.send_message(f"There are already 10 emojis on word {word}!", ephemeral=True)
+      return
+    
+    for current_wmoji_record in current_wmojis_records:
+      if emoji in current_wmoji_record["emoji"]:
+        await interaction.response.send_message(f"{emoji} already gets added to {word}", ephemeral=True)
+        return
+
+    await self.bot.pool.execute(f"""
+      INSERT INTO wmojis
+      (guild_id, word, emoji)
+      VALUES ({interaction.guild_id}, $1, $2); 
+    """, word, emoji) 
+    await interaction.response.send_message(f"{emoji} will get added on word: {word}")
+
+
   #word emoji remove
   @app_commands.command(name="remove", description="stops the bot from reacting with a emoji on a word")
-  async def wmoji_remove(self, interaction:discord.Interaction, word:str, emoji: Optional[str]):
+  async def wmoji_remove(self, interaction: discord.Interaction, word: str, emoji: Optional[str]):
     word = word.lower()
 
     if type(emoji) == str:
-      self.bot.data["wordEmojis"][word].remove(emoji)
+      await self.bot.pool.execute("DELETE FROM wmojis WHERE $1 = word AND emoji = $2;", word.lower(), emoji)
       await interaction.response.send_message(f"removed {emoji} from being reacted on word: {word}")
     else:
 
-      del self.bot.data["wordEmojis"][word]
+      await self.bot.pool.execute("DELETE FROM wmojis WHERE $1 = word;", word.lower())
       await interaction.response.send_message(f"removed ALL emojis from being reacted on word {word}")
-    
-    write_json_data(self.bot.data)
+
 
   #word emoji list
   @app_commands.command(name="list", description="get a list of wmoji's")
-  async def wmoji_list(self, interaction:discord, word: Optional[str]):
-    text = ""
+  async def wmoji_list(self, interaction: discord.Interaction, word: Optional[str]):
     if word == None:
       title = "wmoji: ALL"
-      for key in self.bot.data["wordEmojis"]:
-        text += f"{key}: "
-        for emoji in self.bot.data["wordEmojis"][key]:
-          text += f"{emoji} "
-        text += "\n"
-    else: 
+      records = await self.bot.pool.fetch(f"""
+        SELECT word, emoji FROM wmojis
+        WHERE guild_id = {interaction.guild_id}
+        ORDER BY word ASC; 
+        """)
+
+    else:
       word.lower()
-      title = "wmoji: " + word
-      if word in self.bot.data["wordEmojis"]:
-        for emoji in self.bot.data["wordEmojis"][word]:
-          text += f"{emoji} "
-      else:
-        text = f"HAS NONE"
+      title = f"wmoji: {word}"
+
+      records = await self.bot.pool.fetch(f"""
+      SELECT word, emoji FROM wmojis
+      WHERE guild_id = {interaction.guild_id}
+        AND $1 LIKE '%' || word || '%'
+      ORDER BY word ASC;
+      """, word)
+
+    text = ""
+    if len(records) > 0:
+      current_word = ""
+      for record in records:
+        if record["word"] != current_word:
+          text += f"\n{record['word']}: "
+          current_word = record["word"]
+        
+        text += f"{record['emoji']} "
+    else:
+      text += "N/A"
 
     embed = discord.Embed(
       colour=discord.Colour.dark_gold(),
@@ -87,14 +120,6 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
     
-    
-    
 
 async def setup(bot: commands.Bot) -> None:
   await bot.add_cog(WordEmoji(bot))
-
-# json write (for cogs)
-def write_json_data(data):
-  data_json = json.dumps(data, indent=4)
-  with open("data.json", "w") as file:
-    file.write(data_json)

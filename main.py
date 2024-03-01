@@ -26,17 +26,13 @@ else:
 bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all(), activity=activity, status=status)
 bot.owner_ids = OWNER_USERIDS
 
-# PostgreSQL setup
-async def setup_db() -> asyncpg.Connection:
-    return await asyncpg.connect(f'postgresql://{SQL_USER}@{SQL_IP}/fatherfridgedb', password=SQL_PASSWORD)
-
 # data gets stored in json so should be used for saved data (like settings)
 bot.data = {
-    "joinRole": 1171095238929039360,
-    "webtoons": ["https://www.webtoons.com/en/thriller/school-bus-graveyard/list?title_no=2705"],
-    "reactionRoles": {},
+    "joinRole": 1171095238929039360, # DONE
+    "webtoons": ["https://www.webtoons.com/en/thriller/school-bus-graveyard/list?title_no=2705"], # REMOVE?
+    "reactionRoles": {}, 
     "wordEmojis": {"cheese": "🧀"},
-    "quoteChannel": 1185960968140898325,
+    "quoteChannel": 1185960968140898325, # DONE
     "artContestActive": False,
     "artContestTheme": "Cheese",
     "artContestSubmissionsChannel": 1202694627031785503,
@@ -108,8 +104,19 @@ write_json_data()
 async def setup_hook():
     await load_cogs()
     bot.pool = await asyncpg.create_pool(dsn=f"postgres://{SQL_USER}:{SQL_PASSWORD}@{SQL_IP}:{SQL_PORT}/fatherfridgedb")
-    
-    
+    await bot.pool.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            guild_id bigint PRIMARY KEY,
+	        join_role_id bigint,
+	        quote_channel_id bigint,
+            join_message TEXT
+        );
+        CREATE TABLE IF NOT EXISTS wmojis (
+            guild_id bigint,
+            word TEXT,
+            emoji TEXT
+        );
+    """)
 
 # start up message
 @bot.event
@@ -119,11 +126,37 @@ async def on_ready():
     # print(f"with cogs: {bot.extensions}")
 
 
+# server join
+@bot.event
+async def on_guild_join(guild: discord.Guild):
+    await bot.pool.execute(f"""
+        INSERT INTO settings
+        (guild_id)
+        VALUES ({guild.id})
+    """)
+
+
+#sql test
+@bot.command()
+async def sql(ctx):
+    if ctx.author.id in OWNER_USERIDS:
+        await bot.pool.execute(f"""
+            INSERT INTO settings
+            (guild_id)
+            VALUES ({ctx.guild.id})
+        """)
+        await ctx.send("TEST?")
+    else:
+        await ctx.send("thy are not the one that shaped me")
+
+
 # on member join
 @bot.event
-async def on_member_join(member): #discord.Member
-    role = member.guild.get_role(bot.data["joinRole"])
-    await member.add_roles(role, reason="Joined guild")
+async def on_member_join(member: discord.Member): #discord.Member
+    role_id = await bot.pool.fetchval(f"SELECT join_role_id FROM settings WHERE guild_id = '{member.guild.id}'")
+    if role_id is not None:
+        role = member.guild.get_role(role_id)
+        await member.add_roles(role, reason="Joined guild")
 
 
 
@@ -146,19 +179,6 @@ async def quote(interaction: discord.Interaction, message: discord.Message):
     await quote_channel.send(embed=embed)
     await interaction.response.send_message(f"Added quote \"{message.content}\" by {message.author.name} in #{quote_channel}!", ephemeral=True)
 
-#sql test
-@bot.command()
-async def sql(ctx):
-    if ctx.author.id in OWNER_USERIDS:
-        # async with bot.pool.acquire() as connection:
-            # async with connection.transaction():
-        await bot.pool.execute('''
-            INSERT INTO users(name, dob) VALUES($1, $2)''',
-            'test', datetime.date(1984, 3, 1))
-        
-        await ctx.send("TEST?")
-    else:
-        await ctx.send("thy are not the one that shaped me")
 
 
 bot.run(TOKEN, log_handler=logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'), log_level=log_level)
@@ -190,12 +210,15 @@ note: find a good way to sync or make sure the data base is hosted on the remote
 - list of commands that need to be per guild:
 - /settings
 - /reactionrole
-- /art
-- /poll (needs to be fully redone anyways)
 - /wmoji
+- /art
+
 
 
 # THINGS TO DO AFTER ROAD MAP IS DONE:
+
+create a setup guide for myself
+
 POLL COMMAND v2: switch to buttons?
 
 send msg when they join guild?

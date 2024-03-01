@@ -2,7 +2,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from typing import Optional, Union
-import datetime
 
 class Quote(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -12,7 +11,8 @@ class Quote(commands.Cog):
     # Quote
     @app_commands.command(name="quote", description="make a quote in the quote channel")
     async def quote(self, interaction: discord.Interaction, author: Union[discord.Member ,discord.User], text: Optional[str], image: Optional[discord.Attachment]):
-        quote_channel = interaction.guild.get_channel(self.bot.data["quoteChannel"])
+        quote_channel_id = await self.bot.pool.fetchval(f"SELECT quote_channel_id FROM settings WHERE guild_id = '{interaction.guild_id}'")
+        quote_channel = interaction.guild.get_channel(quote_channel_id)
 
         embed = discord.Embed(
         colour=discord.Colour.dark_gold(),
