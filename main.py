@@ -107,8 +107,8 @@ async def setup_hook():
         CREATE TABLE IF NOT EXISTS settings (
             guild_id bigint PRIMARY KEY,
 	        join_role_id bigint,
-            join_message TEXT
-	        quote_channel_id bigint,
+            join_message TEXT,
+	        quote_channel_id bigint
         );
         CREATE TABLE IF NOT EXISTS wmojis (
             guild_id bigint,
