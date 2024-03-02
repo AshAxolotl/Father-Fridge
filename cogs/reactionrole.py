@@ -27,6 +27,7 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
                 WHERE message_id = {payload.message_id} AND emoji = $1;
                 """, emoji)
             
+            print(role_id_records)
             roles = [discord.Object(record["role_id"]) for record in role_id_records]
             await payload.member.add_roles(*roles, reason="Reaction Role")
 
