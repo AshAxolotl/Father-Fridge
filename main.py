@@ -102,12 +102,13 @@ write_json_data()
 async def setup_hook():
     await load_cogs()
     bot.pool = await asyncpg.create_pool(dsn=f"postgres://{SQL_USER}:{SQL_PASSWORD}@{SQL_IP}:{SQL_PORT}/fatherfridgedb")
+    print(bot.pool)
     await bot.pool.execute("""
         CREATE TABLE IF NOT EXISTS settings (
             guild_id bigint PRIMARY KEY,
 	        join_role_id bigint,
-	        quote_channel_id bigint,
             join_message TEXT
+	        quote_channel_id bigint,
         );
         CREATE TABLE IF NOT EXISTS wmojis (
             guild_id bigint,
@@ -121,7 +122,22 @@ async def setup_hook():
             role_id bigint,
             channel_id bigint
         );
-    """)
+    """) # TODO art contest maybe just in settings?
+
+# removed for now
+"""
+        CREATE TABLE IF NOT EXISTS art_contests (
+            guild_id BIGINT PRIMARY KEY,
+            art_contest_theme TEXT,
+            art_contest_role_id BIGINT,
+            art_contest_announcements_channel_id BIGINT,
+            art_contest_submissions_channel_id BIGINT,
+            art_contest_theme_suggestion_channel_id BIGNIT,
+            art_contest_poll_message_id BIGINT,
+            art_contest_form_id BIGINT,
+            art_contest_responder_uri TEXT
+        );
+"""
 
 # start up message
 @bot.event
@@ -215,7 +231,7 @@ note: find a good way to sync or make sure the data base is hosted on the remote
 - list of commands that need to be per guild:
 - /settings DONE
 - /reactionrole DONE
-- /wmoji DONE SORTA: Make it so wmoji uses id for custom emojis instaid of the full thing so it doesnt break on name change?
+- /wmoji DONE DONE
 - /art
 
 

@@ -117,7 +117,7 @@ class ArtContest(commands.GroupCog, name="art"):
     @app_commands.command(name="submit", description="submit art for the art contest")
     async def submit(self, interaction: discord.Interaction, art: discord.Attachment, title: Optional[str] = "N/A"):
         # Check if contest going on
-        if not self.bot.data["artContestActive"]: 
+        if not self.bot.data["artContestActive"]:  # TODO this could be replaced with a get_scheduled_event
             await interaction.response.send_message("There isnt any art event going on!", ephemeral=True)
             return
         
