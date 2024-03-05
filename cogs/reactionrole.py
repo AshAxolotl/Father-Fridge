@@ -110,6 +110,7 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
     
     # reaction role list TODO this could be imporved by showing what roles every emoji gives
     @app_commands.command(name="list", description="lists the reaction roles")
+    @app_commands.checks.has_permissions(administrator=True)
     async def reaction_role_list(self, interaction:discord.Interaction):
         text = "list of reaction roles:\n"
         
@@ -122,6 +123,11 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
             text += f"https://discord.com/channels/{interaction.guild_id}/{record['channel_id']}/{record['message_id']}\n"
         
         await interaction.response.send_message(text, ephemeral=True, suppress_embeds=True)
+    
+    @reaction_role_list.error
+    async def say_error(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
     
 
 async def setup(bot: commands.Bot) -> None:

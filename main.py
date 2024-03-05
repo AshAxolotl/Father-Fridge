@@ -102,7 +102,6 @@ write_json_data()
 async def setup_hook():
     await load_cogs()
     bot.pool = await asyncpg.create_pool(dsn=f"postgres://{SQL_USER}:{SQL_PASSWORD}@{SQL_IP}:{SQL_PORT}/fatherfridgedb")
-    print(bot.pool)
     await bot.pool.execute("""
         CREATE TABLE IF NOT EXISTS settings (
             guild_id bigint PRIMARY KEY,
@@ -121,6 +120,13 @@ async def setup_hook():
             emoji TEXT,
             role_id bigint,
             channel_id bigint
+        );
+        CREATE TABLE IF NOT EXISTS server_name_suggestions (
+            guild_id bigint,
+            user_id bigint,
+            user_name TEXT,
+            name_suggestion TEXT,
+            UNIQUE (guild_id, user_id)
         );
     """) # TODO art contest maybe just in settings?
 
@@ -142,8 +148,8 @@ async def setup_hook():
 # start up message
 @bot.event
 async def on_ready():
-    print("--------------")
     print(f"{bot.user} is CONNECTED!")
+    print("--------------")
     # print(f"with cogs: {bot.extensions}")
 
 
@@ -153,7 +159,7 @@ async def on_guild_join(guild: discord.Guild):
     await bot.pool.execute(f"""
         INSERT INTO settings
         (guild_id)
-        VALUES ({guild.id})
+        VALUES ({guild.id});
     """)
 
 
