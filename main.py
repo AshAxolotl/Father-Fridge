@@ -124,7 +124,6 @@ async def setup_hook():
         CREATE TABLE IF NOT EXISTS server_name_suggestions (
             guild_id bigint,
             user_id bigint,
-            user_name TEXT,
             name_suggestion TEXT,
             UNIQUE (guild_id, user_id)
         );

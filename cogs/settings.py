@@ -1,8 +1,7 @@
 import json
 import discord
-from discord import app_commands, ChannelType
+from discord import app_commands, ChannelType, ui
 from discord.ext import commands
-from discord.ui import ChannelSelect
 from typing import Any, List, Union
 from bot_config import NO_PERMS_MESSAGE
 
@@ -14,28 +13,27 @@ baseMenuEmbed = discord.Embed(
 )
 
 
-class BaseMenuView(discord.ui.View):
+class BaseMenuView(ui.View):
     def __init__(self, interaction: discord.Interaction):
         super().__init__()
         self.interaction = interaction
         
 
         async def on_timeout(self) -> None:
-            print("timed out...")
             await self.disable_all_items()
 
     # Join Role
-    @discord.ui.button(label="Join Role", style=discord.ButtonStyle.blurple)
-    async def join_role(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @ui.button(label="Join Settings", style=discord.ButtonStyle.blurple)
+    async def join_role(self, interaction: discord.Interaction, button: ui.Button):
         role_id = await interaction.client.pool.fetchval(f"SELECT join_role_id FROM settings WHERE guild_id = '{interaction.guild_id}'")
-        view = DropdownView(dropdown=[JoinRoleDropdown(self.interaction, role_id)])
+        view = JoinSettingsView(dropdown=[JoinRoleDropdown(self.interaction, role_id)])
         embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Join Role", description="Set the role that users should get when they join the guild.")
         await interaction.response.edit_message(view=view, embed=embed)
         self.stop()
 
     #Quote Channel
-    @discord.ui.button(label="Quote Channel", style=discord.ButtonStyle.blurple)
-    async def quote_channel(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @ui.button(label="Quote Channel", style=discord.ButtonStyle.blurple)
+    async def quote_channel(self, interaction: discord.Interaction, button: ui.Button):
         quote_channel_id = await interaction.client.pool.fetchval(f"SELECT quote_channel_id FROM settings WHERE guild_id = '{interaction.guild_id}'")
         view = DropdownView(dropdown=[QuoteChannelDropdown(self.interaction, quote_channel_id)])
         embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Quote Channel", description="Set the channel where quotes will go")
@@ -43,32 +41,54 @@ class BaseMenuView(discord.ui.View):
         self.stop()
 
     #Art Contest
-    @discord.ui.button(label="Art Contest", style=discord.ButtonStyle.blurple)
-    async def art_contest(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @ui.button(label="Art Contest", style=discord.ButtonStyle.blurple)
+    async def art_contest(self, interaction: discord.Interaction, button: ui.Button):
         view = DropdownView(dropdown=[ArtContestAnnouncementsDropdown(self.interaction), ArtContestThemeSuggestionsDropdown(self.interaction), ArtContestSubmissionsDropdown(self.interaction), ArtContestRoleDropdown(self.interaction)])
         embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Art Contest", description="Settings for art contest channels and roles")
         await interaction.response.edit_message(view=view, embed=embed)
         self.stop()
 
+
         
-# base drop down
-class DropdownView(discord.ui.View):
+## VIEWS
+# base drop down view
+class DropdownView(ui.View):
     def __init__(self, dropdown):
         super().__init__()
         # Adds the dropdown to our view object.
         for i in dropdown:
             self.add_item(i)
     
-    @discord.ui.button(label="Back", style=discord.ButtonStyle.gray, row=4)
-    async def back_button(self, interaction: discord.Interaction, button: discord.ui.button):
+    @ui.button(label="Back", style=discord.ButtonStyle.gray, row=4)
+    async def back_button(self, interaction: discord.Interaction, button: ui.button):
+        view = BaseMenuView(interaction)
+        await interaction.response.edit_message(view=view, embed=baseMenuEmbed)
+
+# Join settings view
+class JoinSettingsView(ui.View):
+    def __init__(self, dropdown):
+        super().__init__()
+        # Adds the dropdown to our view object.
+        for i in dropdown:
+            self.add_item(i)
+
+    @ui.button(label="Join Messages", style=discord.ButtonStyle.blurple, row=1)
+    async def join_message(self, interaction: discord.Interaction, button: ui.button):
+        await interaction.response.send_modal(JoinMessageModal())
+    
+    @ui.button(label="Back", style=discord.ButtonStyle.gray, row=1)
+    async def back_button(self, interaction: discord.Interaction, button: ui.button):
         view = BaseMenuView(interaction)
         await interaction.response.edit_message(view=view, embed=baseMenuEmbed)
 
 
+## BUTTON
+# TODO add the back button here as a class?
 
 
+## DROPDOWNS
 # Join Role Dropdown
-class JoinRoleDropdown(discord.ui.RoleSelect):
+class JoinRoleDropdown(ui.RoleSelect):
     def __init__(self, interaction: discord.Interaction, role_id):
         role = interaction.guild.get_role(role_id)
         super().__init__(placeholder=f"Join Role: {role}", min_values=1, max_values=1)
@@ -88,7 +108,7 @@ class JoinRoleDropdown(discord.ui.RoleSelect):
 
 
 # Quote Channel Dropdown
-class QuoteChannelDropdown(discord.ui.ChannelSelect):
+class QuoteChannelDropdown(ui.ChannelSelect):
     def __init__(self, interaction: discord.Interaction, quote_channel_id):
         channel = interaction.guild.get_channel(quote_channel_id)
         super().__init__(placeholder=f"Quote Channel: {channel}", min_values=1, max_values=1, channel_types=[ChannelType.text])
@@ -108,7 +128,7 @@ class QuoteChannelDropdown(discord.ui.ChannelSelect):
         await interaction.response.send_message(f"Successfully set quote channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True, suppress_embeds=True)
 
 # Art Contest Announcements Channel Dropdown
-class ArtContestAnnouncementsDropdown(discord.ui.ChannelSelect):
+class ArtContestAnnouncementsDropdown(ui.ChannelSelect):
     def __init__(self, interaction: discord.Interaction):
         channel = interaction.guild.get_channel(interaction.client.data["artContestAnnouncementsChannel"])
         super().__init__(placeholder=f"Announcements channel: {channel}", min_values=1, max_values=1, channel_types=[ChannelType.text])
@@ -125,7 +145,7 @@ class ArtContestAnnouncementsDropdown(discord.ui.ChannelSelect):
         await interaction.response.send_message(f"Successfully set the art contest announcements channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True, suppress_embeds=True)
 
 # Art Contest Theme Suggestions Channel Dropdown
-class ArtContestThemeSuggestionsDropdown(discord.ui.ChannelSelect):
+class ArtContestThemeSuggestionsDropdown(ui.ChannelSelect):
     def __init__(self, interaction: discord.Interaction):
         channel = interaction.guild.get_channel(interaction.client.data["artContestThemeSuggestionsChannel"])
         super().__init__(placeholder=f"Theme Suggestions channel: {channel}", min_values=1, max_values=1, channel_types=[ChannelType.text])
@@ -142,7 +162,7 @@ class ArtContestThemeSuggestionsDropdown(discord.ui.ChannelSelect):
         await interaction.response.send_message(f"Successfully set the art contest theme suggestions channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True, suppress_embeds=True)
 
 # Art Contest Submission Channel Dropdown
-class ArtContestSubmissionsDropdown(discord.ui.ChannelSelect):
+class ArtContestSubmissionsDropdown(ui.ChannelSelect):
     def __init__(self, interaction: discord.Interaction):
         channel = interaction.guild.get_channel(interaction.client.data["artContestSubmissionsChannel"])
         super().__init__(placeholder=f"Submissions channel: {channel}", min_values=1, max_values=1, channel_types=[ChannelType.forum])
@@ -159,7 +179,7 @@ class ArtContestSubmissionsDropdown(discord.ui.ChannelSelect):
         await interaction.response.send_message(f"Successfully set the art contest Submissions channel to https://discord.com/channels/{interaction.guild_id}/{selected_channels[0].id}", ephemeral=True, suppress_embeds=True)
 
 # Art Contest Role Dropdown
-class ArtContestRoleDropdown(discord.ui.RoleSelect):
+class ArtContestRoleDropdown(ui.RoleSelect):
     def __init__(self, interaction: discord.Interaction):
         role = interaction.guild.get_role(interaction.client.data["artContestRole"])
         super().__init__(placeholder=f"Role: {role}", min_values=1, max_values=1)
@@ -175,11 +195,17 @@ class ArtContestRoleDropdown(discord.ui.RoleSelect):
         await interaction.response.send_message(f"Successfully set the art contest role to <@&{selected_roles[0].id}>", ephemeral=True)
 
 
+## MODALS
+# Join Message Modal
+class JoinMessageModal(ui.Modal, title="Join Message Setting"):
+    dm_message = ui.TextInput(label="DM message", style=discord.TextStyle.paragraph, placeholder="test")
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f'Thanks for your response!', ephemeral=True)
 
 
-
-
-# the command
+## COMMANDS
+# /settings
 class Settings(commands.Cog):
     def __init__(self, bot: commands.bot) -> None:
         self.bot = bot

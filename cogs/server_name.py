@@ -13,11 +13,11 @@ class ServerName(commands.GroupCog, name="server_name"):
     async def suggest(self, interaction: discord.Interaction, text: str):
         await self.bot.pool.execute(f"""
             INSERT INTO server_name_suggestions
-            (guild_id, user_id, user_name, name_suggestion)
-            VALUES ({interaction.guild_id}, {interaction.user.id}, $2, $1)
+            (guild_id, user_id, name_suggestion)
+            VALUES ({interaction.guild_id}, {interaction.user.id}, $1)
             ON CONFLICT (guild_id, user_id) DO
-                UPDATE SET name_suggestion = EXCLUDED.name_suggestion, user_name = EXCLUDED.user_name;
-        """, text, interaction.user.name)
+                UPDATE SET name_suggestion = EXCLUDED.name_suggestion;
+        """, text)
         await interaction.response.send_message(f"Your suggestion for this guild has been set to {text}", ephemeral=True)
 
     # remove
@@ -38,14 +38,16 @@ class ServerName(commands.GroupCog, name="server_name"):
         text = "list of server name suggestions:\n"
         
         records = await self.bot.pool.fetch(f"""
-        SELECT user_name, name_suggestion FROM server_name_suggestions
+        SELECT user_id, name_suggestion FROM server_name_suggestions
         WHERE guild_id = {interaction.guild_id};
         """, )
 
         for record in records:
-            text += f"{record['user_name']}: {record['name_suggestion']}\n"
+            name = discord.utils.get(interaction.guild.members, id=record['user_id'])
+            text += f"{name}: {record['name_suggestion']}\n"
         
         await interaction.response.send_message(text, ephemeral=True)
+
 
 
     # create event    
