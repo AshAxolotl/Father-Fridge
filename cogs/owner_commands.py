@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-import json
 from bot_config import OWNER_USERIDS
 
 class OwnerCommands(commands.Cog):
@@ -9,23 +8,30 @@ class OwnerCommands(commands.Cog):
 
     #sync commands
     @commands.command()
+    @commands.is_owner()
     async def sync_cmds(self, ctx):
-        if ctx.author.id in OWNER_USERIDS:
-            print("Synced Commands")
-            await self.bot.tree.sync()
-            await ctx.send("Command tree sycned")
-        else:
+        print("Synced Commands")
+        await self.bot.tree.sync()
+        await ctx.send("Command tree sycned")
+            
+    
+    @sync_cmds.error
+    async def say_error(self, ctx, error):
+        if isinstance(error, commands.NotOwner):
             await ctx.send("thy are not the one that shaped me")
 
     #shutdown bot
     @commands.command()
+    @commands.is_owner()
     async def shutdown(self, ctx):
-        if ctx.author.id in OWNER_USERIDS:
             print("Shutting Down from command")
             await ctx.send("Shutting Down")
             await self.bot.pool.close()
             await self.bot.close()
-        else:
+    
+    @shutdown.error
+    async def say_error(self, ctx, error):
+        if isinstance(error, commands.NotOwner):
             await ctx.send("thy are not the one that shaped me")
 
 

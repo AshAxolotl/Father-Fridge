@@ -22,7 +22,7 @@ else:
 
 # Setting up Discord Bot Manager Class and Command Handler
 bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all(), activity=activity, status=status)
-bot.owner_ids = OWNER_USERIDS
+bot.owner_ids.update(OWNER_USERIDS)
 
 # data gets stored in json so should be used for saved data (like settings)
 bot.data = {
@@ -228,7 +228,7 @@ bot.run(TOKEN, log_handler=logging.FileHandler(filename='discord.log', encoding=
 
 2.7 MOVE THE REST!!!
 
-3. change the sync command to work beter with more guilds
+3. change the sync command to work beter with more guilds?
 4. move stuff that isnt guild spesifc: TOKEN, origin_form_id, in_dev? enz to a config.json(?) file (idk if the service_account.json should be in there) DONE
 
 note: find a good way to sync or make sure the data base is hosted on the remote server
