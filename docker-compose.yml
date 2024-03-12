@@ -1,4 +1,4 @@
 services:
-  father-fridge-bot:
+  bot:
     build: .
-    restart: unless-stopped
+    restart: on-failure
