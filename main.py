@@ -1,7 +1,6 @@
 # Importing Dependencies
 import json
 import os.path
-# import base64
 import discord
 from discord.ext import commands
 import logging
@@ -21,9 +20,8 @@ else:
 
 
 # Setting up Discord Bot Manager Class and Command Handler
-bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all(), activity=activity, status=status)
+bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all(), activity=activity, status=status) #, activity=activity, status=status
 bot.owner_ids.update(OWNER_USERIDS)
-
 # data gets stored in json so should be used for saved data (like settings)
 bot.data = {
     "joinRole": 1171095238929039360, # DONE
@@ -46,7 +44,7 @@ bot.data = {
     "artContestResponderUri": ""
 }
 
-# cog loading (gets called just before bot.run)
+# cog loading
 async def load_cogs():
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
@@ -96,53 +94,38 @@ write_json_data()
 
 
 ## BOT EVENTS
-
 # setup hooks
 @bot.event
 async def setup_hook():
     await load_cogs()
+    # Database
     bot.pool = await asyncpg.create_pool(dsn=f"postgres://{SQL_USER}:{SQL_PASSWORD}@{SQL_IP}:{SQL_PORT}/fatherfridgedb")
     await bot.pool.execute("""
         CREATE TABLE IF NOT EXISTS settings (
-            guild_id bigint PRIMARY KEY,
-	        join_role_id bigint,
+            guild_id BIGINT PRIMARY KEY,
+	        join_role_id BIGINT,
             join_message TEXT,
-	        quote_channel_id bigint
+	        quote_channel_id BIGINT
         );
         CREATE TABLE IF NOT EXISTS wmojis (
-            guild_id bigint,
+            guild_id BIGINT,
             word TEXT,
             emoji TEXT
         );
         CREATE TABLE IF NOT EXISTS reaction_roles (
-            guild_id bigint,
-            message_id bigint,
+            guild_id BIGINT,
+            message_id BIGINT,
             emoji TEXT,
-            role_id bigint,
-            channel_id bigint
+            role_id BIGINT,
+            channel_id BIGINT
         );
         CREATE TABLE IF NOT EXISTS server_name_suggestions (
-            guild_id bigint,
-            user_id bigint,
+            guild_id BIGINT,
+            user_id BIGINT,
             name_suggestion TEXT,
             UNIQUE (guild_id, user_id)
         );
     """) # TODO art contest maybe just in settings?
-
-# removed for now
-"""
-        CREATE TABLE IF NOT EXISTS art_contests (
-            guild_id BIGINT PRIMARY KEY,
-            art_contest_theme TEXT,
-            art_contest_role_id BIGINT,
-            art_contest_announcements_channel_id BIGINT,
-            art_contest_submissions_channel_id BIGINT,
-            art_contest_theme_suggestion_channel_id BIGNIT,
-            art_contest_poll_message_id BIGINT,
-            art_contest_form_id BIGINT,
-            art_contest_responder_uri TEXT
-        );
-"""
 
 # start up message
 @bot.event
@@ -150,39 +133,6 @@ async def on_ready():
     print(f"{bot.user} is CONNECTED!")
     print("--------------")
     # print(f"with cogs: {bot.extensions}")
-
-
-# server join
-@bot.event
-async def on_guild_join(guild: discord.Guild):
-    await bot.pool.execute(f"""
-        INSERT INTO settings
-        (guild_id)
-        VALUES ({guild.id});
-    """)
-
-
-#sql test
-@bot.command()
-async def sql(ctx):
-    if ctx.author.id in OWNER_USERIDS:
-        await bot.pool.execute(f"""
-            INSERT INTO settings
-            (guild_id)
-            VALUES ({ctx.guild.id})
-        """)
-        await ctx.send("TEST?")
-    else:
-        await ctx.send("thy are not the one that shaped me")
-
-
-# on member join
-@bot.event
-async def on_member_join(member: discord.Member): #discord.Member
-    role_id = await bot.pool.fetchval(f"SELECT join_role_id FROM settings WHERE guild_id = '{member.guild.id}'")
-    if role_id is not None:
-        role = member.guild.get_role(role_id)
-        await member.add_roles(role, reason="Joined guild")
 
 
 
@@ -208,53 +158,3 @@ async def quote(interaction: discord.Interaction, message: discord.Message):
 
 
 bot.run(TOKEN, log_handler=logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'), log_level=log_level)
-
-
-
-# TODO:
-"""
-
-# art contest DONE (ADD A COMMAND WITH 3 OPTIONS FOR CREATING A Art Contest: <THEME/winner announcement/ theme announcement>)
-
-# ROAD MAP:
-1. learn sql basics DONE
-2. switch to sql (make sure the sql works with the bot being in multiable guilds)
-2.1: create a database DONE
-2.2 setup pgadmin to view and manage the database DONE
-2.3 make it work with python DONE
-2.4 make it work with python + async DONE
-2.5 make it work with the bot... DONE
-2.6 move something basic to database DONE
-
-2.7 MOVE THE REST!!!
-
-3. change the sync command to work beter with more guilds?
-4. move stuff that isnt guild spesifc: TOKEN, origin_form_id, in_dev? enz to a config.json(?) file (idk if the service_account.json should be in there) DONE
-
-note: find a good way to sync or make sure the data base is hosted on the remote server
-
-- list of commands that need to be per guild:
-- /settings DONE
-- /reactionrole DONE
-- /wmoji DONE DONE
-- /art
-
-
-
-# THINGS TO DO AFTER ROAD MAP IS DONE:
-
-
-
-create a setup guide for myself DONE
-
-POLL COMMAND v2: switch to buttons?
-
-send msg when they join guild?
-
-
-# random things to look into:
-
-check out moduls
-
-beter profile pic for bot
-"""
