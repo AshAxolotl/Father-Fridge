@@ -3,4 +3,4 @@ services:
     build: .
     restart: on-failure
     volumes:
-      - ./data:./
+      - ./data:/code
