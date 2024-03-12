@@ -1,6 +1,6 @@
 services:
   bot:
-    build: .
+    build: fridge
     restart: on-failure
     volumes:
-      - ./data:/code
+      - fatherfridge:.
