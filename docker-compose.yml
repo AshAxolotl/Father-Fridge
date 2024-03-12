@@ -3,4 +3,4 @@ services:
     build: fridge
     restart: on-failure
     volumes:
-      - ./data:/data
+      - ./data:.
