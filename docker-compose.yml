@@ -3,4 +3,4 @@ services:
     build: fridge
     restart: on-failure
     volumes:
-      - fatherfridge:.
+      - fridge:/code
