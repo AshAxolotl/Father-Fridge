@@ -2,5 +2,3 @@ services:
   bot:
     build: fridge
     restart: on-failure
-    volumes:
-      - .:/usr/app/father-fridge-bot

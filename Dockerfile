@@ -1,7 +1,6 @@
 FROM python:latest
 
-WORKDIR /usr/app/father-fridge-bot
-
+WORKDIR /app/
 COPY . .
 RUN pip install -r requirements.txt
 
