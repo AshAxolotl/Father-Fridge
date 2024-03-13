@@ -1,0 +1,6 @@
+services:
+  father-fridge-bot:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - .:/app
