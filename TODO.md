@@ -20,7 +20,7 @@ note: find a good way to sync or make sure the data base is hosted on the remote
 - list of commands that need to be per guild:
 - /settings DONE
 - /reactionrole DONE
-- /wmoji DONE DONE
+- /wmoji DONE 
 - /art
 
 
@@ -47,14 +47,16 @@ note: find a good way to sync or make sure the data base is hosted on the remote
 
 create a setup guide for myself DONE
 
-POLL COMMAND v2: switch to buttons?
+POLL COMMAND v2: switch to buttons? or maybe just remove the commmand
 
-send msg when they join guild?
+REACTION ROLES v2: switch to buttons?
+
+send msg when they join guild? problay to anyoing
 
 
 # random things to look into:
 
-check out moduls
+check out modals
 
 beter profile pic for bot
 

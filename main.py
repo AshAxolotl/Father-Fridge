@@ -29,18 +29,18 @@ bot.data = {
     "reactionRoles": {},  # DONE
     "wordEmojis": {"cheese": "🧀"}, # DONE
     "quoteChannel": 1185960968140898325, # DONE
-    "artContestActive": False,
-    "artContestTheme": "Cheese",
-    "artContestSubmissionsChannel": 1202694627031785503,
-    "artContestAnnouncementsChannel": 1142861396875432028,
-    "artContestThemeSuggestionsChannel": 1201194360209944766,
-    "artContestThemeSuggestionsMessage": 1201197417819820082,
+    "artContestActive": False, # NOT NEEDED
+    "artContestTheme": "Cheese",  # DONE
+    "artContestSubmissionsChannel": 1202694627031785503, # DONE
+    "artContestAnnouncementsChannel": 1142861396875432028,  # DONE
+    "artContestThemeSuggestionsChannel": 1201194360209944766, # DONE
+    "artContestThemeSuggestionsMessage": 1201197417819820082, 
     "artContestThemePollMessage": 0,
     "artContestThemePollReactions": {},
     "artContestThemeSuggestions": {"1171539759533920318": "PLACE HOLDER"}, # {botid: "PLACE HOLDER"}
     "artContestSubmissions": {},
     "artContestFormId": 0,
-    "artContestRole": 1142856096369881188,
+    "artContestRole": 1142856096369881188, # DONE
     "artContestResponderUri": ""
 }
 
@@ -49,48 +49,6 @@ async def load_cogs():
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
             await bot.load_extension(f"cogs.{filename[:-3]}")
-
-
-## JSON 
-# json write
-def write_json_data():
-    data_json = json.dumps(bot.data, indent=4)
-    with open("data.json", "w") as file:
-        file.write(data_json)
-
-# json read
-def read_json_data():
-    with open("data.json", "r") as file:
-        fileContents = file.read()
-
-    data = json.loads(fileContents)
-
-    return data
-
-# update data
-def update_data():
-    data_json = read_json_data()
-    for key in data_json:
-        bot.data[key] = data_json[key]
-
-
-# remove oudated vars in data.json
-def remove_outdated_data():
-    data_json = read_json_data()
-    for key in list(data_json):
-        if not key in bot.data:
-            del data_json[key]
-    
-    data_json = json.dumps(data_json)
-    with open("data.json", "w") as file:
-        file.write(data_json)
-
-# sets the data to the data in the data.json
-if os.path.isfile("./data.json"):
-    remove_outdated_data()
-    update_data()
-write_json_data()
-
 
 
 ## BOT EVENTS
@@ -104,8 +62,16 @@ async def setup_hook():
         CREATE TABLE IF NOT EXISTS settings (
             guild_id BIGINT PRIMARY KEY,
 	        join_role_id BIGINT,
-            join_message TEXT,
-	        quote_channel_id BIGINT
+	        quote_channel_id BIGINT,
+            art_contest_theme TEXT,
+            art_contest_role_id BIGINT,
+            art_contest_announcements_channel_id BIGINT,
+            art_contest_poll_message_id BIGINT,
+            art_contest_theme_suggestion_channel_id BIGINT,
+            art_contest_theme_suggestions_message_id BIGINT,
+            art_contest_submissions_channel_id BIGINT,
+            art_contest_form_id BIGINT,
+            art_contest_responder_uri TEXT
         );
         CREATE TABLE IF NOT EXISTS wmojis (
             guild_id BIGINT,
