@@ -91,7 +91,17 @@ async def setup_hook():
             name_suggestion TEXT,
             UNIQUE (guild_id, user_id)
         );
+        CREATE TABLE IF NOT EXISTS art_contest_theme_suggestions (
+            guild_id BIGINT,
+            user_id BIGINT,
+            suggested_theme TEXT,
+            UNIQUE (guild_id, user_id)
+        );
     """) # TODO art contest maybe just in settings?
+
+    #CREATE TABLE IF NOT EXISTS art_contest_theme_votes (
+                           
+    #    );
 
 # start up message
 @bot.event

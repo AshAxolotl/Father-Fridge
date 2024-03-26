@@ -12,26 +12,11 @@ class SQL(commands.Cog):
             INSERT INTO settings
             (guild_id)
             VALUES ({guild.id});
+            INSERT INTO art_contest_theme_suggestions
+            (guild_id, user_id, suggested_theme)
+            VALUES ({guild.id}, {self.bot.user.id}, "PLACE HOLDER");
         """)
 
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(SQL(bot))
-
-
-
-
-# removed for now
-"""
-        CREATE TABLE IF NOT EXISTS art_contests (
-            guild_id BIGINT PRIMARY KEY,
-            art_contest_theme TEXT,
-            art_contest_role_id BIGINT,
-            art_contest_announcements_channel_id BIGINT,
-            art_contest_submissions_channel_id BIGINT,
-            art_contest_theme_suggestion_channel_id BIGNIT,
-            art_contest_poll_message_id BIGINT,
-            art_contest_form_id BIGINT,
-            art_contest_responder_uri TEXT
-        );
-"""
