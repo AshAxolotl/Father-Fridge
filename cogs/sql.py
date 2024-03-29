@@ -12,9 +12,6 @@ class SQL(commands.Cog):
             INSERT INTO settings
             (guild_id)
             VALUES ({guild.id});
-            INSERT INTO art_contest_theme_suggestions
-            (guild_id, user_id, suggested_theme)
-            VALUES ({guild.id}, {self.bot.user.id}, "PLACE HOLDER");
         """)
 
 

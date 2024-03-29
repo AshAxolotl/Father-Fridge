@@ -47,8 +47,6 @@ class BaseMenuView(ui.View):
         SELECT art_contest_announcements_channel_id, art_contest_theme_suggestion_channel_id, art_contest_submissions_channel_id, art_contest_role_id FROM settings
         WHERE guild_id = {interaction.guild_id};
         """, )
-        
-        print(records)
 
         view = DropdownView(dropdown=[ArtContestAnnouncementsDropdown(self.interaction, records["art_contest_announcements_channel_id"]), 
                                       ArtContestThemeSuggestionsDropdown(self.interaction, records["art_contest_theme_suggestion_channel_id"]), 

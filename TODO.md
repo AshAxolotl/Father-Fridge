@@ -12,7 +12,7 @@
 
 2.7 MOVE THE REST!!!
 
-3. change the sync command to work beter with more guilds?
+3. change the sync command to work beter with more guilds? not really needed
 4. move stuff that isnt guild spesifc: TOKEN, origin_form_id, in_dev? enz to a config.json(?) file (idk if the service_account.json should be in there) DONE
 
 note: find a good way to sync or make sure the data base is hosted on the remote server
@@ -23,6 +23,11 @@ note: find a good way to sync or make sure the data base is hosted on the remote
 - /wmoji DONE 
 - /art
 
+# art to do:
+remove submission command?
+get art contest winner
+improve start_new?
+why is it printing []?
 
 # removed for now
 """
@@ -53,12 +58,13 @@ REACTION ROLES v2: switch to buttons?
 
 send msg when they join guild? problay to anyoing
 
-
 # random things to look into:
 
 check out modals
 
 beter profile pic for bot
+
+make the bot start if not running at a set point in time
 
 
 

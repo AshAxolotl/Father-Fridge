@@ -45,7 +45,7 @@ bot.data = {
 }
 
 # cog loading
-async def load_cogs():
+async def load_extensions():
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
             await bot.load_extension(f"cogs.{filename[:-3]}")
@@ -55,7 +55,7 @@ async def load_cogs():
 # setup hooks
 @bot.event
 async def setup_hook():
-    await load_cogs()
+    await load_extensions()
     # Database
     bot.pool = await asyncpg.create_pool(dsn=f"postgres://{SQL_USER}:{SQL_PASSWORD}@{SQL_IP}:{SQL_PORT}/fatherfridgedb")
     await bot.pool.execute("""
@@ -70,7 +70,7 @@ async def setup_hook():
             art_contest_theme_suggestion_channel_id BIGINT,
             art_contest_theme_suggestions_message_id BIGINT,
             art_contest_submissions_channel_id BIGINT,
-            art_contest_form_id BIGINT,
+            art_contest_form_id TEXT,
             art_contest_responder_uri TEXT
         );
         CREATE TABLE IF NOT EXISTS wmojis (
@@ -97,11 +97,17 @@ async def setup_hook():
             suggested_theme TEXT,
             UNIQUE (guild_id, user_id)
         );
-    """) # TODO art contest maybe just in settings?
-
-    #CREATE TABLE IF NOT EXISTS art_contest_theme_votes (
-                           
-    #    );
+        CREATE TABLE IF NOT EXISTS art_contest_submissions (
+            guild_id BIGINT,
+            user_id BIGINT,
+            thread_id BIGINT,
+            message_id BIGINT,
+            form_id TEXT,
+            title TEXT,
+            image_url TEXT,
+            UNIQUE (guild_id, user_id)
+        );
+    """)
 
 # start up message
 @bot.event
