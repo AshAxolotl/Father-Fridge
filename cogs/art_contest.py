@@ -8,95 +8,6 @@ from googleapiclient.errors import HttpError
 from typing import Optional, Literal
 from bot_config import NO_PERMS_MESSAGE, BASE_ART_CONTEST_FORM_ID
 
-# function for setting a datetime to a spesfic day next week
-def next_weekday(d, weekday):
-    days_ahead = weekday - d.weekday()
-    if days_ahead <= 0: # Target day already happened this week
-        days_ahead += 7
-    return d + datetime.timedelta(days_ahead)
-
-# create a scheduled event
-async def create_scheduled_event(guild: discord.Guild, name: str, time_start: datetime.datetime, time_end: datetime.datetime, description="", locaction=""):
-    await guild.create_scheduled_event(
-        name=name,
-        description=description,
-        start_time=time_start,
-        end_time=time_end,
-        privacy_level=PrivacyLevel.guild_only,
-        entity_type=EntityType.external,
-        location=locaction
-    )
-
-# async def get_contest_winner(self):
-#     try:
-#         # get form responses
-#         service = google_api_stuff.create_service(type="forms", version="v1")
-#         results = service.forms().responses().list(formId=self.bot.data["artContestFormId"]).execute()
-
-#         # handle responses
-#         if "responses" in results: # checks if there where any responses on the form
-#             for response in results["responses"]:
-#                 for answer_id in response["answers"]:
-#                     for submission_key in self.bot.data["artContestSubmissions"]:
-#                         if answer_id[:7] == self.bot.data["artContestSubmissions"][submission_key]["id"]:
-#                             self.bot.data["artContestSubmissions"][submission_key]["points"] += int(response["answers"][answer_id]["textAnswers"]["answers"][0]["value"])
-#                             self.bot.data["artContestSubmissions"][submission_key]["max_points"] += 5
-#                             break
-            
-#             # sort submissions based of score
-#             for submission_key in self.bot.data["artContestSubmissions"]:
-#                 self.bot.data["artContestSubmissions"][submission_key]["score"] = self.bot.data["artContestSubmissions"][submission_key]["points"] / self.bot.data["artContestSubmissions"][submission_key]["max_points"]
-
-#             # creates a sorted list of tuples with [0] being the ID and [1] all of the data (most defintly not the best way of doing this but i have no idea how to do it beter and it works)
-#             sorted_submissions = sorted(self.bot.data["artContestSubmissions"].items(), key=lambda x: x[1]["score"], reverse=True)
-#     except HttpError as error:
-#         print(f"The Form for winner could not be found: {error}")
-#         sorted_submissions = None
-#     except:
-#         print(f"unknwon error with getting for data for winning announcement")
-#         sorted_submissions = None
-
-#     # create embed text
-#     if sorted_submissions is not None:
-#         winner_image_url = sorted_submissions[0][1]["url"]
-#         winner_embed_text = ""
-#         placement = 0
-#         for submission in sorted_submissions:
-#             placement += 1
-#             points = submission[1]["points"]
-#             max_points = submission[1]["max_points"]
-#             winner_embed_text += f"{placement}. <@{submission[0]}> with {points}/{max_points}\n"
-
-#         # WIP give winner post WINNER tag
-#         return {"text": winner_embed_text, "image_url": winner_image_url}
-        
-#     else:
-#         return {"text": "there where no responses to the form :(", "image_url": ""}
-
-# send theme suggestions message
-async def send_theme_suggestions_msg(guild: discord.Guild, suggestions_channel_id: int, suggestions = []) -> int:
-    suggestions_channel: discord.TextChannel = guild.get_channel(suggestions_channel_id)
-    # Creates a new message for showing suggested themes
-    suggestion_embed = discord.Embed(title="Use /art suggest <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
-    suggestion_embed.set_author(name="Theme Suggestions")
-    for suggestion in suggestions:
-        suggestion_embed.add_field(name=suggestion["suggested_theme"], value=f" -{discord.utils.get(guild.members, id=suggestion['user_id'])}", inline=False)
-    
-    suggestion_message = await suggestions_channel.send(embed=suggestion_embed, silent=True)
-    return suggestion_message.id
-
-# update theme suggestions message
-async def update_theme_suggestions_msg(guild: discord.Guild, channel_id: int, message_id: int, suggestions):
-    message: discord.Message  = await guild.get_channel(channel_id).fetch_message(message_id)
-    embed: discord.Embed = message.embeds[0] # gets the embed that needs to be edited
-
-    # clears all the fields to make sure that 1 person cant suggest more
-    embed.clear_fields()
-    for suggestion in suggestions:
-        embed.add_field(name=suggestion["suggested_theme"], value=f" -{discord.utils.get(guild.members, id=suggestion['user_id'])}", inline=False)
-
-    await message.edit(embed=embed)
-
 
 # ArtContest Class
 class ArtContest(commands.GroupCog, name="art"):
@@ -268,16 +179,26 @@ class ArtContest(commands.GroupCog, name="art"):
             WHERE guild_id = {interaction.guild_id}
             """)
 
-        # Create New Event For Winner Announcement
-        time = next_weekday(discord.utils.utcnow(), 0) # Sets the time to coming monday
-        await create_scheduled_event(
-            guild=interaction.guild,
-            name=self.event_winner_announcement_name,
-            time_start=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=0),
-            time_end=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=1)
-        )
+            # Create New Event For Winner Announcement
+            time = next_weekday(discord.utils.utcnow(), 0) # Sets the time to coming monday
+            await create_scheduled_event(
+                guild=interaction.guild,
+                name=self.event_winner_announcement_name,
+                time_start=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=0),
+                time_end=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=1)
+            )
+            
+        elif action == "recount_winner":
+            ids_and_theme = await self.bot.pool.fetchrow(f"""
+            SELECT art_contest_form_id, art_contest_theme, art_contest_responder_uri, art_contest_announcements_channel_id FROM settings
+            WHERE guild_id = {interaction.guild_id};
+            """)
+            embed = await get_winner_embed(pool=self.bot.pool, guild_id=interaction.guild_id, form_id=ids_and_theme["art_contest_form_id"], theme=ids_and_theme["art_contest_theme"], form_url=ids_and_theme["art_contest_responder_uri"])
+            channel = self.bot.get_partial_messageable(ids_and_theme["art_contest_announcements_channel_id"])
+            await channel.send("(Vote Recount)", embed=embed)
         
         await interaction.followup.send(f"executed: {action}", ephemeral=True)
+    
     @admin.error
     async def say_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
@@ -325,22 +246,16 @@ class ArtContest(commands.GroupCog, name="art"):
                         # Complets the winner  announcement event so it gets removed
                         await after.edit(status=EventStatus.completed)
 
-                        channel_ids = await self.bot.pool.fetchrow(f"""
-                            SELECT art_contest_announcements_channel_id, art_contest_theme_suggestion_channel_id FROM settings
+                        ids_and_theme = await self.bot.pool.fetchrow(f"""
+                            SELECT art_contest_announcements_channel_id, art_contest_theme_suggestion_channel_id, art_contest_form_id, art_contest_theme, art_contest_responder_uri, art_contest_role_id FROM settings
                             WHERE guild_id = {after.guild_id};
                         """)
 
-                        announcements_channel: discord.TextChannel = before.guild.get_channel(channel_ids["art_contest_announcements_channel_id"])
+                        announcements_channel: discord.TextChannel = before.guild.get_channel(ids_and_theme["art_contest_announcements_channel_id"])
 
-                        # # Get winner
-                        # winner_embed_info = await get_contest_winner(self)
-                            
-                        # winner_embed = discord.Embed(title="", description=winner_embed_info["text"], colour=discord.Colour.dark_gold())
-                        # winner_embed.set_author(name=f"Voting Results: {theme}", url=self.bot.data["artContestResponderUri"])
-                        # winner_embed.set_image(url=winner_embed_info["image_url"])
-                        # winner_embed.set_footer(text="winner(s) shall be put on the fridge in 3-5 business day")
-                        
-                        # await announcements_channel.send(f"<@&{self.bot.data['artContestRole']}>", embed=winner_embed)
+                        # Announce winner
+                        winner_embed = await get_winner_embed(pool=self.bot.pool, guild_id=after.guild_id, form_id=ids_and_theme["art_contest_form_id"], theme=ids_and_theme["art_contest_theme"], form_url=ids_and_theme["art_contest_responder_uri"])
+                        await announcements_channel.send(f"<@&{ids_and_theme['art_contest_role_id']}>", embed=winner_embed)
 
                         suggestions = await self.bot.pool.fetch(f"""        
                         SELECT suggested_theme FROM art_contest_theme_suggestions
@@ -371,7 +286,7 @@ class ArtContest(commands.GroupCog, name="art"):
 
                         
                         # Creates a new message for showing suggested themes
-                        suggestions_message_id = await send_theme_suggestions_msg(after.guild, channel_ids["art_contest_theme_suggestion_channel_id"])
+                        suggestions_message_id = await send_theme_suggestions_msg(after.guild, ids_and_theme["art_contest_theme_suggestion_channel_id"])
 
                         await self.bot.pool.execute(f"""
                             UPDATE settings
@@ -468,7 +383,124 @@ class ArtContest(commands.GroupCog, name="art"):
                         )
 
 
+## Functions
+# function for setting a datetime to a spesfic day next week
+def next_weekday(d, weekday):
+    days_ahead = weekday - d.weekday()
+    if days_ahead <= 0: # Target day already happened this week
+        days_ahead += 7
+    return d + datetime.timedelta(days_ahead)
+
+# create a scheduled event
+async def create_scheduled_event(guild: discord.Guild, name: str, time_start: datetime.datetime, time_end: datetime.datetime, description="", locaction=""):
+    await guild.create_scheduled_event(
+        name=name,
+        description=description,
+        start_time=time_start,
+        end_time=time_end,
+        privacy_level=PrivacyLevel.guild_only,
+        entity_type=EntityType.external,
+        location=locaction
+    )
+
+# send theme suggestions message
+async def send_theme_suggestions_msg(guild: discord.Guild, suggestions_channel_id: int, suggestions = []) -> int:
+    suggestions_channel: discord.TextChannel = guild.get_channel(suggestions_channel_id)
+    # Creates a new message for showing suggested themes
+    suggestion_embed = discord.Embed(title="Use /art suggest <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
+    suggestion_embed.set_author(name="Theme Suggestions")
+    for suggestion in suggestions:
+        suggestion_embed.add_field(name=suggestion["suggested_theme"], value=f" -{discord.utils.get(guild.members, id=suggestion['user_id'])}", inline=False)
+    
+    suggestion_message = await suggestions_channel.send(embed=suggestion_embed, silent=True)
+    return suggestion_message.id
+
+# update theme suggestions message
+async def update_theme_suggestions_msg(guild: discord.Guild, channel_id: int, message_id: int, suggestions):
+    message: discord.Message  = await guild.get_channel(channel_id).fetch_message(message_id)
+    embed: discord.Embed = message.embeds[0] # gets the embed that needs to be edited
+
+    # clears all the fields to make sure that 1 person cant suggest more
+    embed.clear_fields()
+    for suggestion in suggestions:
+        embed.add_field(name=suggestion["suggested_theme"], value=f" -{discord.utils.get(guild.members, id=suggestion['user_id'])}", inline=False)
+
+    await message.edit(embed=embed)
+
+
+
 ## FORM FUNCTIONS
+# get winner                   
+async def get_results_embed_info(form_id: str, guild_id: int, pool) -> dict:
+    """gets the art contest winner"""
+
+    # gets the form results
+    try:
+        service = google_api_stuff.create_service(type="forms", version="v1")
+        results = service.forms().responses().list(formId=form_id).execute()
+    except HttpError as error:
+        print(f"The Form for winner could not be found: {error}")
+        return {"text": "there was a error getting the form votes :(", "image_url": ""}
+    except:
+        print(f"unknown error with getting for data for winning announcement")
+        return {"text": "there was a error getting the form votes :(", "image_url": ""}
+    
+    if "responses" not in results:
+        return {"text": "there where no responses to the form :(", "image_url": ""}
+
+
+    # get submissions
+    submissions_records = await pool.fetch(f"""
+        SELECT user_id, form_id, image_url FROM art_contest_submissions
+        WHERE guild_id = {guild_id}
+    """)
+
+    submissions_list = [dict(row) for row in submissions_records]
+    for submission in submissions_list:
+        submission["points"] = 0
+        submission["max_points"] = 0
+    
+
+    # handle responses
+    for response in results["responses"]:
+        for answer_id in response["answers"]:
+            for submission in submissions_list:
+                if answer_id[:7] == submission["form_id"]:
+                    submission["points"] += int(response["answers"][answer_id]["textAnswers"]["answers"][0]["value"])
+                    submission["max_points"] += 5
+                    break
+    
+    # sort submissions based of score
+    for submission in submissions_list:
+        submission["score"] = submission["points"] / submission["max_points"]
+
+    # sorts the list based of the score from high to low
+    submissions_list = sorted(submissions_list, key=lambda d: d["score"], reverse=True)
+    # create the embed text
+    winner_embed_text = ""
+    placement = 0
+    for submission in submissions_list:
+        placement += 1
+        winner_embed_text += f"{placement}. <@{submission['user_id']}> with {submission['points']}/{submission['max_points']}\n"
+
+    return {"text": winner_embed_text, "image_url": submissions_list[0]["image_url"]}
+    
+
+async def get_winner_embed(pool, guild_id: int, form_id: str, theme: str, form_url: str):
+    winner_embed_info = await get_results_embed_info(form_id=form_id, guild_id=guild_id, pool=pool) # returns a dict with {text: "", "image_url": ""}
+        
+    winner_embed = discord.Embed(title="", description=winner_embed_info["text"], colour=discord.Colour.dark_gold())
+    winner_embed.set_author(name=f"Voting Results: {theme}", url=form_url)
+    winner_embed.set_image(url=winner_embed_info["image_url"])
+    winner_embed.set_footer(text="winner(s) shall be put on the fridge in 3-5 business day")
+    
+    return winner_embed
+
+
+
+
+
+
 # Send winner voting form                     
 async def send_winner_voting_form(self, guild_id: int, create_result):
     ids = await self.bot.pool.fetchrow(f"""

@@ -25,7 +25,7 @@ note: find a good way to sync or make sure the data base is hosted on the remote
 
 # art to do:
 remove submission command?
-get art contest winner
+get art contest winner DONE
 improve start_new?
 why is it printing []?
 
@@ -48,7 +48,11 @@ why is it printing []?
 
 # THINGS TO DO AFTER ROAD MAP IS DONE:
 
+wmoji throwing error when in dms
 
+some commands need to be guild only
+
+improve the art contest theme voting
 
 create a setup guide for myself DONE
 
