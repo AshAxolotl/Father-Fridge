@@ -24,26 +24,6 @@ class ArtContest(commands.GroupCog, name="art"):
         self.event_art_contest_time = {"weekday": 6, "hour": 22, "minute": 59}
 
     ## USER COMMANDS
-    # Suggest Theme Command
-    @app_commands.command(name="suggest", description="suggest a theme!")
-    async def suggest(self, interaction: discord.Interaction, theme: app_commands.Range[str, 1, 50]):
-        await self.bot.pool.execute(f"""
-            INSERT INTO art_contest_theme_suggestions
-            (guild_id, user_id, suggested_theme)
-            VALUES ({interaction.guild_id}, {interaction.user.id}, $1)
-            ON CONFLICT (guild_id, user_id) DO
-                UPDATE SET suggested_theme = EXCLUDED.suggested_theme;
-        """, theme)
-
-        ids = await self.bot.pool.fetchrow(f"""
-        SELECT art_contest_theme_suggestion_channel_id, art_contest_theme_suggestions_message_id FROM settings
-        WHERE guild_id = {interaction.guild_id};
-        """)
-        
-        await update_theme_suggestions_msg(bot=self.bot, guild_id=interaction.guild_id, channel_id=ids["art_contest_theme_suggestion_channel_id"], message_id=ids["art_contest_theme_suggestions_message_id"])
-
-        await interaction.response.send_message(f"Successfully added {theme} to the theme suggestions in https://discord.com/channels/{interaction.guild_id}/{ids['art_contest_theme_suggestion_channel_id']}/{ids['art_contest_theme_suggestions_message_id']}", ephemeral=True, suppress_embeds=True)
-
     # Submit Art command
     @app_commands.command(name="submit", description="submit art for the art contest")
     async def submit(self, interaction: discord.Interaction, art: discord.Attachment, title: Optional[str] = "N/A"):
@@ -461,8 +441,8 @@ async def send_theme_suggestions_msg(bot, guild_id: int, channel_id: int) -> int
 
     suggestions_channel = bot.get_partial_messageable(channel_id)
     # Creates a new message for showing suggested themes
-    suggestion_embed = discord.Embed(title="", description="Current Suggestions:", colour=discord.Colour.dark_gold())
-    suggestion_embed.set_author(name="Theme Suggestions")
+    suggestion_embed = discord.Embed(title="Theme Suggestions", description="Current Suggestions:", colour=discord.Colour.dark_gold())
+    # suggestion_embed.set_author(name="Theme Suggestions")
     for suggestion in suggestions:
         suggestion_embed.add_field(name=suggestion["suggested_theme"], value=f" -<@{suggestion['user_id']}>", inline=False)
     
