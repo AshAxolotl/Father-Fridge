@@ -5,5 +5,5 @@ services:
 #    network_mode: "host"
     restart: on-failure
     volumes:
-      - ./:/app
+      - .:/app
 

@@ -1,8 +1,6 @@
 FROM python:latest
 
-WORKDIR /app
+ADD requirements.txt /app/requirements.txt
+RUN pip install -r /app/requirements.txt
 
-COPY . .
-RUN pip install -r requirements.txt
-
-CMD ["python3", "-u", "main.py"]
+CMD ["python3", "-u", "/app/main.py"]
