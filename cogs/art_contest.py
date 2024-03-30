@@ -3,11 +3,9 @@ import discord
 from discord import EventStatus, app_commands, EntityType, PrivacyLevel
 import datetime
 from random import choice
-
-from discord.utils import MISSING
 import google_api_stuff as google_api_stuff
 from googleapiclient.errors import HttpError
-from typing import Optional, Literal
+from typing import Optional, Literal, Union
 from bot_config import NO_PERMS_MESSAGE, BASE_ART_CONTEST_FORM_ID
 
 
@@ -198,25 +196,41 @@ class ArtContest(commands.GroupCog, name="art"):
             await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
 
-    # Remove theme suggestions
-    @app_commands.command(name="remove_theme_suggestion", description="remove a theme suggestion")
-    @app_commands.checks.has_permissions(administrator=True)
-    async def remove_theme_suggestion(self, interaction: discord.Interaction, theme: str):
-        await self.bot.pool.execute(f"DELETE FROM art_contest_theme_suggestions WHERE guild_id = {interaction.guild_id} AND suggested_theme = $1", theme)
-        
-        ids = await self.bot.pool.fetchrow(f"""
-        SELECT art_contest_theme_suggestion_channel_id, art_contest_theme_suggestions_message_id FROM settings
-        WHERE guild_id = {interaction.guild_id};
-        """)
-        
-        await update_theme_suggestions_msg(bot=self.bot, guild_id=interaction.guild_id, channel_id=ids["art_contest_theme_suggestion_channel_id"], message_id=ids["art_contest_theme_suggestions_message_id"])
-
-        await interaction.response.send_message(f"Successfully REMOVED {theme} from the theme suggestions in https://discord.com/channels/{interaction.guild_id}/{ids['art_contest_theme_suggestion_channel_id']}/{ids['art_contest_theme_suggestions_message_id']}", ephemeral=True, suppress_embeds=True)
-        
-    @remove_theme_suggestion.error
-    async def say_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.MissingPermissions):
+    # Remove theme suggestion or remove submission
+    @app_commands.command(name="remove", description="remove a theme suggestion or submission")
+    async def remove(self, interaction: discord.Interaction, type: Literal["theme_suggestion", "submission"], user: Optional[Union[discord.Member ,discord.User]]):
+        if user == None:
+            user = interaction.user
+        if user != interaction.user and not interaction.user.guild_permissions.administrator:
             await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
+            return
+
+        if type == "theme_suggestion":
+            # remove theme suggestions
+            await self.bot.pool.execute(f"DELETE FROM art_contest_theme_suggestions WHERE guild_id = {interaction.guild_id} AND user_id = {user.id}")
+            
+            ids = await self.bot.pool.fetchrow(f"""
+            SELECT art_contest_theme_suggestion_channel_id, art_contest_theme_suggestions_message_id FROM settings
+            WHERE guild_id = {interaction.guild_id};
+            """)
+            
+            await update_theme_suggestions_msg(bot=self.bot, guild_id=interaction.guild_id, channel_id=ids["art_contest_theme_suggestion_channel_id"], message_id=ids["art_contest_theme_suggestions_message_id"])
+
+            await interaction.response.send_message(f"Successfully REMOVED the theme suggestions by {user}", ephemeral=True, suppress_embeds=True)
+
+        elif type == "submission":
+            # remove submission
+            thread_id = await self.bot.pool.fetchval(f"""
+            SELECT thread_id FROM art_contest_submissions
+            WHERE guild_id = {interaction.guild_id} AND user_id = {user.id};
+            """)
+
+            try:
+                await interaction.guild.get_thread(thread_id).delete()
+            finally:
+                await self.bot.pool.execute(f"DELETE FROM art_contest_submissions WHERE guild_id = {interaction.guild_id} AND user_id = {user.id}")
+                
+                await interaction.response.send_message(f"Successfully REMOVED the submission by {user}", ephemeral=True, suppress_embeds=True)
 
 
     ## LISTENERS
