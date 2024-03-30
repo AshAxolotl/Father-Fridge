@@ -3,7 +3,6 @@ services:
   bot:
     image: father-fridge-bot:latest
 #    network_mode: "host"
-    context: .
     restart: on-failure
     volumes:
       - .:/app
