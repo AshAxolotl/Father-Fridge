@@ -79,10 +79,6 @@ class JoinSettingsView(ui.View):
         # Adds the dropdown to our view object.
         for i in dropdown:
             self.add_item(i)
-
-    @ui.button(label="Join Messages", style=discord.ButtonStyle.blurple, row=1)
-    async def join_message(self, interaction: discord.Interaction, button: ui.button):
-        await interaction.response.send_modal(JoinMessageModal())
     
     @ui.button(label="Back", style=discord.ButtonStyle.gray, row=1)
     async def back_button(self, interaction: discord.Interaction, button: ui.button):
@@ -214,14 +210,6 @@ class ArtContestRoleDropdown(ui.RoleSelect):
         """)
         await interaction.response.send_message(f"Successfully set the art contest role to <@&{selected_roles[0].id}>", ephemeral=True)
 
-
-## MODALS
-# Join Message Modal
-class JoinMessageModal(ui.Modal, title="Join Message Setting"):
-    dm_message = ui.TextInput(label="DM message", style=discord.TextStyle.paragraph, placeholder="test")
-
-    async def on_submit(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'Thanks for your response!', ephemeral=True)
 
 
 ## COMMANDS
