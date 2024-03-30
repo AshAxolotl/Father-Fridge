@@ -1,7 +1,8 @@
 # TO-DO
-beter perms handling
 
 docker?
+
+remove gitattrubutes
 
 set up a dev branch?
 
@@ -9,7 +10,7 @@ improve the art contest theme voting
 
 improve the art contest remove commands
 
-
+improve art suggest theme by making it a button with a modal?
 
 REACTION ROLES v2: switch to buttons?
 
