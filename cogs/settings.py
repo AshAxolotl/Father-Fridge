@@ -231,6 +231,7 @@ class Settings(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="settings", description="bot settings")
+    @app_commands.guild_only()
     @app_commands.checks.has_permissions(administrator=True)
     async def settings(self, interaction:discord.Interaction):
         # embed

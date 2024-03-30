@@ -10,6 +10,7 @@ from bot_config import NO_PERMS_MESSAGE, BASE_ART_CONTEST_FORM_ID
 
 
 # ArtContest Class
+@app_commands.guild_only()
 class ArtContest(commands.GroupCog, name="art"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot

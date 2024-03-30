@@ -5,7 +5,7 @@ import re
 from typing import Optional
 from bot_config import NO_PERMS_MESSAGE
 
-
+@app_commands.guild_only()
 class ReactionRole(commands.GroupCog, name="reactionrole"):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot

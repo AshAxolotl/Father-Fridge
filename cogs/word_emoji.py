@@ -4,16 +4,21 @@ from discord.ext import commands
 import json
 from typing import Optional
 
-
+@app_commands.guild_only()
 class WordEmoji(commands.GroupCog, name="wmoji"):
   def __init__(self, bot: commands.Bot) -> None:
     self.bot = bot
     super().__init__()
+    
 
 
   ## LISTENER
   @commands.Cog.listener()
-  async def on_message(self, message:discord.Message): 
+  async def on_message(self, message:discord.Message):
+    # returns when send in dm
+    if message.guild == None:
+      return
+    
     if message.author != self.bot.user:
       emojis_records = await self.bot.pool.fetch(f"""
       SELECT emoji FROM wmojis

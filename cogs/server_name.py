@@ -4,6 +4,7 @@ from discord.ext import commands
 from bot_config import NO_PERMS_MESSAGE
 import random
 
+@app_commands.guild_only()
 class ServerName(commands.GroupCog, name="server_name"):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot

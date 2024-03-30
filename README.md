@@ -18,7 +18,7 @@
    NO_PERMS_MESSAGE = ""
    
    # Google forms
-   BASE_FORM_ID = ""
+   BASE_ART_CONTEST_FORM_ID = ""
    SERVICE_ACCOUNT = {}
    
    # PostgreSQL

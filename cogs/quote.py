@@ -10,6 +10,7 @@ class Quote(commands.Cog):
     
     # Quote
     @app_commands.command(name="quote", description="make a quote in the quote channel")
+    @app_commands.guild_only()
     async def quote(self, interaction: discord.Interaction, author: Union[discord.Member ,discord.User], text: Optional[str], image: Optional[discord.Attachment]):
         quote_channel_id = await self.bot.pool.fetchval(f"SELECT quote_channel_id FROM settings WHERE guild_id = '{interaction.guild_id}'")
         quote_channel = interaction.guild.get_channel(quote_channel_id)
