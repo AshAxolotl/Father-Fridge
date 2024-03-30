@@ -1,11 +1,5 @@
 # TO-DO
 
-docker?
-
-remove gitattrubutes
-
-set up a dev branch?
-
 improve the art contest theme voting
 
 improve the art contest remove commands

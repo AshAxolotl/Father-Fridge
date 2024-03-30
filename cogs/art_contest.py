@@ -3,6 +3,8 @@ import discord
 from discord import EventStatus, app_commands, EntityType, PrivacyLevel
 import datetime
 from random import choice
+
+from discord.utils import MISSING
 import google_api_stuff as google_api_stuff
 from googleapiclient.errors import HttpError
 from typing import Optional, Literal
@@ -394,6 +396,41 @@ class ArtContest(commands.GroupCog, name="art"):
                         )
 
 
+# theme suggestion view
+class ThemeSuggestionView(discord.ui.View):
+    def __init__(self, bot):
+        super().__init__(timeout=None)
+        self.bot = bot
+
+    @discord.ui.button(label='Suggest a theme', style=discord.ButtonStyle.gray, custom_id='persistent_view:theme_suggestion_button')
+    async def green(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(JoinMessageModal(bot=self.bot))
+
+# Join Message Modal
+class JoinMessageModal(discord.ui.Modal, title="Suggest an art contest theme"):
+    def __init__(self, bot):
+        super().__init__()
+        self.bot = bot
+    suggested_theme = discord.ui.TextInput(label="Theme", style=discord.TextStyle.short, placeholder="Type your theme suggestion here and click submit", max_length=50)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        channel_ids = await self.bot.pool.fetchrow(f"""
+            SELECT art_contest_theme_suggestion_channel_id, art_contest_theme_suggestions_message_id FROM settings
+            WHERE guild_id = {interaction.guild_id};
+            """)
+        
+        await self.bot.pool.execute(f"""
+            INSERT INTO art_contest_theme_suggestions
+            (guild_id, user_id, suggested_theme)
+            VALUES ({interaction.guild_id}, {interaction.user.id}, $1)
+            ON CONFLICT (guild_id, user_id) DO
+                UPDATE SET suggested_theme = EXCLUDED.suggested_theme;
+        """, self.suggested_theme.value)
+        
+        await update_theme_suggestions_msg(bot=self.bot, guild_id=interaction.guild_id, channel_id=channel_ids["art_contest_theme_suggestion_channel_id"], message_id=channel_ids["art_contest_theme_suggestions_message_id"])
+        await interaction.response.send_message("ty for submitting a theme!", ephemeral=True)
+
+
 ## FUNCTIONS
 # next weekday
 def next_weekday(d, weekday):
@@ -424,12 +461,12 @@ async def send_theme_suggestions_msg(bot, guild_id: int, channel_id: int) -> int
 
     suggestions_channel = bot.get_partial_messageable(channel_id)
     # Creates a new message for showing suggested themes
-    suggestion_embed = discord.Embed(title="Use /art suggest <theme> in another channel to suggested a theme!", description="Current Suggestions:", colour=discord.Colour.dark_gold())
+    suggestion_embed = discord.Embed(title="", description="Current Suggestions:", colour=discord.Colour.dark_gold())
     suggestion_embed.set_author(name="Theme Suggestions")
     for suggestion in suggestions:
         suggestion_embed.add_field(name=suggestion["suggested_theme"], value=f" -<@{suggestion['user_id']}>", inline=False)
     
-    suggestion_message = await suggestions_channel.send(embed=suggestion_embed, silent=True)
+    suggestion_message = await suggestions_channel.send(embed=suggestion_embed, view=ThemeSuggestionView(bot), silent=True)
     return suggestion_message.id
 
 # update theme suggestions message
@@ -652,4 +689,5 @@ async def update_form(pool, form_id, theme: str, guild: discord.Guild) -> dict:
 
 # set up cog
 async def setup(bot):
+    bot.add_view(ThemeSuggestionView(bot)) # makes it so the view is persists between restarts
     await bot.add_cog(ArtContest(bot))
