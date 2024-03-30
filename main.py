@@ -22,27 +22,6 @@ else:
 # Setting up Discord Bot Manager Class and Command Handler
 bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all(), activity=activity, status=status) #, activity=activity, status=status
 bot.owner_ids.update(OWNER_USERIDS)
-# data gets stored in json so should be used for saved data (like settings)
-bot.data = {
-    "joinRole": 1171095238929039360, # DONE
-    "webtoons": ["https://www.webtoons.com/en/thriller/school-bus-graveyard/list?title_no=2705"], # REMOVE?
-    "reactionRoles": {},  # DONE
-    "wordEmojis": {"cheese": "🧀"}, # DONE
-    "quoteChannel": 1185960968140898325, # DONE
-    "artContestActive": False, # NOT NEEDED
-    "artContestTheme": "Cheese",  # DONE
-    "artContestSubmissionsChannel": 1202694627031785503, # DONE
-    "artContestAnnouncementsChannel": 1142861396875432028,  # DONE
-    "artContestThemeSuggestionsChannel": 1201194360209944766, # DONE
-    "artContestThemeSuggestionsMessage": 1201197417819820082, 
-    "artContestThemePollMessage": 0,
-    "artContestThemePollReactions": {},
-    "artContestThemeSuggestions": {"1171539759533920318": "PLACE HOLDER"}, # {botid: "PLACE HOLDER"}
-    "artContestSubmissions": {},
-    "artContestFormId": 0,
-    "artContestRole": 1142856096369881188, # DONE
-    "artContestResponderUri": ""
-}
 
 # cog loading
 async def load_extensions():
@@ -55,7 +34,6 @@ async def load_extensions():
 # setup hooks
 @bot.event
 async def setup_hook():
-    await load_extensions()
     # Database
     bot.pool = await asyncpg.create_pool(dsn=f"postgres://{SQL_USER}:{SQL_PASSWORD}@{SQL_IP}:{SQL_PORT}/fatherfridgedb")
     await bot.pool.execute("""
@@ -108,14 +86,14 @@ async def setup_hook():
             UNIQUE (guild_id, user_id)
         );
     """)
+    # load extensions / cogs
+    await load_extensions()
 
 # start up message
 @bot.event
 async def on_ready():
     print(f"{bot.user} is CONNECTED!")
     print("--------------")
-    # print(f"with cogs: {bot.extensions}")
-
 
 
 ## CONTEXT MENUS (dont have good cog support so they here)

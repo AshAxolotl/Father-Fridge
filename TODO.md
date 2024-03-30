@@ -24,35 +24,20 @@ note: find a good way to sync or make sure the data base is hosted on the remote
 - /art
 
 # art to do:
-remove submission command?
-get art contest winner DONE
-improve start_new?
-why is it printing []?
-
-# removed for now
-"""
-        CREATE TABLE IF NOT EXISTS art_contests (
-            guild_id BIGINT PRIMARY KEY,
-            art_contest_theme TEXT,
-            art_contest_role_id BIGINT,
-            art_contest_announcements_channel_id BIGINT,
-            art_contest_submissions_channel_id BIGINT,
-            art_contest_theme_suggestion_channel_id BIGNIT,
-            art_contest_poll_message_id BIGINT,
-            art_contest_form_id BIGINT,
-            art_contest_responder_uri TEXT
-        );
-"""
-
-
 
 # THINGS TO DO AFTER ROAD MAP IS DONE:
+
+beter perms handling
+
+docker?
 
 wmoji throwing error when in dms
 
 some commands need to be guild only
 
 improve the art contest theme voting
+
+improve the art contest remove commands
 
 create a setup guide for myself DONE
 
