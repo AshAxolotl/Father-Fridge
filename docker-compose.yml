@@ -1,7 +1,7 @@
 version: '3'
 services:
   bot:
-    build: .
+    image: father-fridge-bot:latest
 #    network_mode: "host"
     restart: on-failure
     volumes:
