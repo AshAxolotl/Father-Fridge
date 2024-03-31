@@ -1,7 +1,8 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-import random
+from random import choice
+from datetime import timedelta
 
 @app_commands.guild_only()
 class ServerName(commands.GroupCog, name="server_name"):
@@ -63,7 +64,7 @@ class ServerName(commands.GroupCog, name="server_name"):
         entity_type=discord.EntityType.external,
         location="Suggest names by using /server_name suggest"
         )
-        await interaction.response.send_message(f"created scheduled event for name change", ephemeral=True)
+        await interaction.response.send_message("Created scheduled event for name change", ephemeral=True)
 
     @commands.Cog.listener()
     async def on_scheduled_event_update(self, before: discord.ScheduledEvent, after: discord.ScheduledEvent):
@@ -73,9 +74,9 @@ class ServerName(commands.GroupCog, name="server_name"):
                     if after.status == discord.EventStatus.active:
                         await after.edit(status=discord.EventStatus.completed)
                         # New scheduled event for server rename                 
-                        time_now = discord.utils.utcnow()
-                        time_start = time_now.replace(day=(time_now.day + 1), hour=22, minute=59, second=0)
-                        time_end = time_now.replace(day=(time_now.day + 1), hour=22, minute=59, second=1)
+                        time_now = discord.utils.utcnow() + timedelta(days=1)
+                        time_start = time_now.replace(hour=22, minute=59, second=0)
+                        time_end = time_now.replace(hour=22, minute=59, second=1)
 
                         await before.guild.create_scheduled_event(
                         name="Daily Server Rename",
@@ -92,12 +93,12 @@ class ServerName(commands.GroupCog, name="server_name"):
                         WHERE guild_id = {before.guild_id} AND name_suggestion != $1;
                         """, before.guild.name)
 
-                        if len(records) == 0:
-                            name = "There where no valid suggestions :("
-                        else: 
-                            record = random.choice(records)
-                            name = record["name_suggestion"]
-                        await before.guild.edit(reason="Daily Rename", name=name)
+                        # if len(records) == 0:
+                        #     name = "There where no valid suggestions :("
+                        # else: 
+                        #     record = random.choice(records)
+                        #     name = record["name_suggestion"]
+                        await before.guild.edit(reason="Daily Rename", name="There where no valid suggestions" if len(records) == 0 else choice(records)['name_suggestion'])
 
                         
                         
