@@ -189,11 +189,6 @@ class ArtContest(commands.GroupCog, name="art"):
             await channel.send("(Vote Recount)", embed=embed)
         
         await interaction.followup.send(f"executed: {action}", ephemeral=True)
-    
-    @admin.error
-    async def say_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
 
     # Remove theme suggestion or remove submission

@@ -3,7 +3,6 @@ from discord import app_commands
 from discord.ext import commands
 import re
 from typing import Optional
-from bot_config import NO_PERMS_MESSAGE
 
 @app_commands.guild_only()
 class ReactionRole(commands.GroupCog, name="reactionrole"):
@@ -74,12 +73,6 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
         await interaction.response.send_message(f"channel: https://discord.com/channels/{interaction.guild_id}/{interaction.channel_id}, message: https://discord.com/channels/{interaction.guild_id}/{interaction.channel_id}/{message_id}, emoji: {emoji} with role: @{role} has been ADDED", ephemeral=True, suppress_embeds=True)
         
 
-    @reaction_role_add.error
-    async def say_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
-        
-
     # reaction role remove
     @app_commands.command(name="remove", description="remove a reaction role (needs to be used in the channel the msg is in)")
     @app_commands.checks.has_permissions(administrator=True)
@@ -100,11 +93,6 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
             await message.clear_reactions()
             await self.bot.pool.execute(f"DELETE FROM reaction_roles WHERE message_id = {message_id};")
             await interaction.response.send_message(f"all reactionroles on message: https://discord.com/channels/{interaction.guild_id}/{interaction.channel.id}/{message_id} in channel https://discord.com/channels/{interaction.guild_id}/{interaction.channel.id} have been REMOVED", ephemeral=True, suppress_embeds=True)
-        
-    @reaction_role_remove.error
-    async def say_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
     
     # reaction role list TODO this could be imporved by showing what roles every emoji gives
@@ -122,11 +110,6 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
             text += f"https://discord.com/channels/{interaction.guild_id}/{record['channel_id']}/{record['message_id']}\n"
         
         await interaction.response.send_message(text, ephemeral=True, suppress_embeds=True)
-    
-    @reaction_role_list.error
-    async def say_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
     
 
 async def setup(bot: commands.Bot) -> None:

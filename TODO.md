@@ -2,7 +2,9 @@
 
 improve the art contest theme voting (maybe wait for the discord poll thing)
 
+better commants in the main.py
 
+global app command error event / handeling
 
 # random things to look into:
 

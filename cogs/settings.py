@@ -2,8 +2,7 @@ import json
 import discord
 from discord import app_commands, ChannelType, ui
 from discord.ext import commands
-from typing import Any, List, Union
-from bot_config import NO_PERMS_MESSAGE
+from typing import List, Union
 
 # BASE MENU seen when using /settings
 baseMenuEmbed = discord.Embed(
@@ -228,12 +227,6 @@ class Settings(commands.Cog):
 
         
         await interaction.response.send_message(embed=baseMenuEmbed, view=view, ephemeral=True)
-    
-    # error for if user of command doesnt have the perms
-    @settings.error
-    async def say_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
 
 

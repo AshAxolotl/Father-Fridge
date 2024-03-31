@@ -1,7 +1,6 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from bot_config import NO_PERMS_MESSAGE
 import random
 
 @app_commands.guild_only()
@@ -27,11 +26,6 @@ class ServerName(commands.GroupCog, name="server_name"):
     async def remove(self, interaction: discord.Interaction, suggestion: str):
         await self.bot.pool.execute(f"DELETE FROM server_name_suggestions WHERE name_suggestion = $1 AND guild_id = {interaction.guild_id}", suggestion)
         await interaction.response.send_message(f"Tried to remove all suggestions with the text: {suggestion}", ephemeral=True)
-
-    @remove.error
-    async def say_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
     # list
     @app_commands.command(name="list", description="list all suggestions for this guild")
@@ -70,11 +64,6 @@ class ServerName(commands.GroupCog, name="server_name"):
         location="Suggest names by using /server_name suggest"
         )
         await interaction.response.send_message(f"created scheduled event for name change", ephemeral=True)
-
-    @event.error
-    async def say_error(self, interaction: discord.Interaction, error):
-        if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
 
     @commands.Cog.listener()
     async def on_scheduled_event_update(self, before: discord.ScheduledEvent, after: discord.ScheduledEvent):
