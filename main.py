@@ -30,7 +30,7 @@ class CustomCommandTree(app_commands.CommandTree):
 
 class CustomBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=COMMAND_PREFIX, intents=discord.Intents.all(), activity=activity, status=status, tree_cls=CustomCommandTree)
+        super().__init__(command_prefix=commands.when_mentioned_or(COMMAND_PREFIX), intents=discord.Intents.all(), activity=activity, status=status, tree_cls=CustomCommandTree)
         self.owner_ids.update(OWNER_USERIDS)
 
     async def setup_hook(self) -> None:

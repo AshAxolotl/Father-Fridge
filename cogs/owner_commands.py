@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from bot_config import OWNER_USERIDS
+from bot_config import OWNER_USERIDS, DEBUG
 
 class OwnerCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -22,6 +22,13 @@ class OwnerCommands(commands.Cog):
             await ctx.send("Shutting Down")
             await self.bot.pool.close()
             await self.bot.close()
+
+    #send log
+    @commands.command()
+    @commands.is_owner()
+    async def log(self, ctx: commands.Context):
+        log_file = discord.File("discord.log", filename="dicord.log")
+        await ctx.send(f"DEBUG: {DEBUG}",file=log_file)
 
 
 
