@@ -73,13 +73,6 @@ class SQL(commands.Cog):
     async def sql(self, ctx):
         await ctx.send(f"sql test")
 
-    @sql.error
-    async def say_error(self, ctx, error):
-        if isinstance(error, commands.NotOwner):
-            await ctx.send("thy are not the one that shaped me")
-        else:
-            print(error)
-
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(SQL(bot))

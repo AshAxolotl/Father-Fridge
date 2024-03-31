@@ -45,6 +45,12 @@ class CustomBot(commands.Bot):
         print(f"{self.user} is CONNECTED!")
         print("--------------")
 
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
+        if isinstance(error, commands.NotOwner):
+            await ctx.send("thy are not the one that shaped me")
+        else:
+            return await super().on_command_error(ctx, error)
+
 
 # Setting up Discord Bot Manager Class and Command Handler
 bot = CustomBot()

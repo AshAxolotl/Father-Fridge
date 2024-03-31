@@ -13,12 +13,6 @@ class OwnerCommands(commands.Cog):
         print("Synced Commands")
         await self.bot.tree.sync()
         await ctx.send("Command tree sycned")
-            
-    
-    @sync_cmds.error
-    async def say_error(self, ctx, error):
-        if isinstance(error, commands.NotOwner):
-            await ctx.send("thy are not the one that shaped me")
 
     #shutdown bot
     @commands.command()
@@ -28,11 +22,6 @@ class OwnerCommands(commands.Cog):
             await ctx.send("Shutting Down")
             await self.bot.pool.close()
             await self.bot.close()
-    
-    @shutdown.error
-    async def say_error(self, ctx, error):
-        if isinstance(error, commands.NotOwner):
-            await ctx.send("thy are not the one that shaped me")
 
 
 

@@ -6,6 +6,8 @@ better commants in the main.py
 
 global app command error event / handeling
 
+time zone things
+
 # random things to look into:
 
 beter profile pic for bot
