@@ -2,7 +2,15 @@
 
 improve the art contest theme voting (maybe wait for the discord poll thing)
 
+add timestamp to the art contest submissions?
+
 link to discord message in the google form?
+
+qoute handle images enz
+
+improve the no perms msg by saying what perm is missing
+
+command to send the current discord.log (owner only)
 
 # random things to look into:
 
