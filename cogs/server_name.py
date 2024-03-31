@@ -3,6 +3,8 @@ from discord import app_commands
 from discord.ext import commands
 from random import choice
 from datetime import timedelta
+from zoneinfo import ZoneInfo
+from bot_config import TIME_ZONE
 
 @app_commands.guild_only()
 class ServerName(commands.GroupCog, name="server_name"):
@@ -51,9 +53,9 @@ class ServerName(commands.GroupCog, name="server_name"):
     @app_commands.checks.has_permissions(administrator=True)
     async def event(self, interaction: discord.Interaction):
         # New scheduled event for server rename                 
-        time_now = discord.utils.utcnow()
-        time_start = time_now.replace(hour=22, minute=59, second=0)
-        time_end = time_now.replace(hour=22, minute=59, second=1)
+        time_now = discord.utils.utcnow().astimezone(ZoneInfo(TIME_ZONE))
+        time_start = time_now.replace(hour=23, minute=59, second=0)
+        time_end = time_now.replace(hour=23, minute=59, second=1)
 
         await interaction.guild.create_scheduled_event(
         name="Daily Server Rename",
@@ -74,9 +76,9 @@ class ServerName(commands.GroupCog, name="server_name"):
                     if after.status == discord.EventStatus.active:
                         await after.edit(status=discord.EventStatus.completed)
                         # New scheduled event for server rename                 
-                        time_now = discord.utils.utcnow() + timedelta(days=1)
-                        time_start = time_now.replace(hour=22, minute=59, second=0)
-                        time_end = time_now.replace(hour=22, minute=59, second=1)
+                        time_now = discord.utils.utcnow().astimezone(ZoneInfo(TIME_ZONE)) + timedelta(days=1)
+                        time_start = time_now.replace(hour=23, minute=59, second=0)
+                        time_end = time_now.replace(hour=23, minute=59, second=1)
 
                         await before.guild.create_scheduled_event(
                         name="Daily Server Rename",

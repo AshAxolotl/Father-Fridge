@@ -20,6 +20,7 @@ else:
 
 
 class CustomCommandTree(app_commands.CommandTree):
+    # app command errors
     async def on_error(self, interaction: discord.Interaction[discord.Client], error: app_commands.AppCommandError) -> None:
         if isinstance(error, app_commands.MissingPermissions):
             await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
@@ -45,6 +46,7 @@ class CustomBot(commands.Bot):
         print(f"{self.user} is CONNECTED!")
         print("--------------")
 
+    # ctx command errors
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
         if isinstance(error, commands.NotOwner):
             await ctx.send("thy are not the one that shaped me")

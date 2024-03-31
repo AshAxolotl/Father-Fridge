@@ -2,11 +2,7 @@
 
 improve the art contest theme voting (maybe wait for the discord poll thing)
 
-better commants in the main.py
-
-global app command error event / handeling
-
-time zone things
+link to discord message in the google form?
 
 # random things to look into:
 

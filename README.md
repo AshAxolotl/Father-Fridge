@@ -8,7 +8,7 @@
 ## Setup bot
 ##### 1. Create a file named bot_config.py with:
    ```python
-   # Base Settings (needed  to run)
+   # Base Settings
    TOKEN = ""
    DEBUG = True 
    COMMAND_PREFIX = "!" 
@@ -16,6 +16,7 @@
    # Extra Settings 
    OWNER_USERIDS = {} # Set
    NO_PERMS_MESSAGE = ""
+   TIME_ZONE = ""
    
    # Google forms
    BASE_ART_CONTEST_FORM_ID = ""

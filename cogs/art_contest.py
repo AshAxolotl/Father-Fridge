@@ -2,11 +2,12 @@ from discord.ext import commands
 import discord
 from discord import EventStatus, app_commands, EntityType, PrivacyLevel
 import datetime
+from zoneinfo import ZoneInfo
 from random import choice
 import google_api_stuff as google_api_stuff
 from googleapiclient.errors import HttpError
 from typing import Optional, Literal, Union
-from bot_config import NO_PERMS_MESSAGE, BASE_ART_CONTEST_FORM_ID
+from bot_config import NO_PERMS_MESSAGE, BASE_ART_CONTEST_FORM_ID, TIME_ZONE
 
 
 # ArtContest Class
@@ -15,11 +16,11 @@ class ArtContest(commands.GroupCog, name="art"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.event_theme_announcement_name = "Art Contest: theme announcement"
-        self.event_theme_announcement_time = {"weekday": 1, "hour": 17, "minute": 0}
+        self.event_theme_announcement_time = {"weekday": 1, "hour": 18, "minute": 0}
         self.event_winner_announcement_name = "Art Contest: winner announcement"
-        self.event_winner_announcement_time = {"weekday": 0, "hour": 20, "minute": 0}
+        self.event_winner_announcement_time = {"weekday": 0, "hour": 21, "minute": 0}
         self.event_art_contest_name = "Art Contest: "
-        self.event_art_contest_time = {"weekday": 6, "hour": 22, "minute": 59}
+        self.event_art_contest_time = {"weekday": 6, "hour": 23, "minute": 59}
 
     ## USER COMMANDS
     # Submit Art command
@@ -97,7 +98,7 @@ class ArtContest(commands.GroupCog, name="art"):
             SELECT art_contest_announcements_channel_id FROM settings
             WHERE guild_id = {interaction.guild_id};
             """)
-            time = next_weekday(discord.utils.utcnow(), self.event_theme_announcement_time["weekday"]) # sets the time to coming tuesday
+            time = next_weekday(discord.utils.utcnow().astimezone(ZoneInfo(TIME_ZONE)), self.event_theme_announcement_time["weekday"]) # sets the time to coming tuesday
             await create_scheduled_event(
                 guild=interaction.guild,
                 name=self.event_theme_announcement_name,
@@ -113,7 +114,7 @@ class ArtContest(commands.GroupCog, name="art"):
             SELECT art_contest_submissions_channel_id, art_contest_theme FROM settings
             WHERE guild_id = {interaction.guild_id};
             """)
-            time = discord.utils.utcnow()
+            time = discord.utils.utcnow().astimezone(ZoneInfo(TIME_ZONE))
             await create_scheduled_event(
                 guild=interaction.guild,
                 name=f"{self.event_art_contest_name}{ids_and_theme['art_contest_theme']}",
@@ -129,7 +130,7 @@ class ArtContest(commands.GroupCog, name="art"):
             SELECT art_contest_responder_uri FROM settings
             WHERE guild_id = {interaction.guild_id};
             """)
-            time = next_weekday(discord.utils.utcnow(), self.event_winner_announcement_time["weekday"]) # Sets the time to coming monday
+            time = next_weekday(discord.utils.utcnow().astimezone(ZoneInfo(TIME_ZONE)), self.event_winner_announcement_time["weekday"]) # Sets the time to coming monday
             await create_scheduled_event(
                 guild=interaction.guild,
                 name=self.event_winner_announcement_name,
@@ -168,7 +169,7 @@ class ArtContest(commands.GroupCog, name="art"):
             """)
 
             # Create New Event For Winner Announcement
-            time = next_weekday(discord.utils.utcnow(), 0) # Sets the time to coming monday
+            time = next_weekday(discord.utils.utcnow().astimezone(ZoneInfo(TIME_ZONE)), 0) # Sets the time to coming monday
             await create_scheduled_event(
                 guild=interaction.guild,
                 name=self.event_winner_announcement_name,
@@ -294,7 +295,7 @@ class ArtContest(commands.GroupCog, name="art"):
                             """)
 
                         # New scheduled event for theme annoucement
-                        time = next_weekday(discord.utils.utcnow(), self.event_theme_announcement_time["weekday"]) # sets the time to coming tuesday
+                        time = next_weekday(discord.utils.utcnow().astimezone(ZoneInfo(TIME_ZONE)), self.event_theme_announcement_time["weekday"]) # sets the time to coming tuesday
                         await create_scheduled_event(
                             guild=after.guild,
                             name=self.event_theme_announcement_name,
@@ -353,7 +354,7 @@ class ArtContest(commands.GroupCog, name="art"):
 
 
                         # Create New Event For Art Contest
-                        time = discord.utils.utcnow()
+                        time = discord.utils.utcnow().astimezone(ZoneInfo(TIME_ZONE))
                         await create_scheduled_event(
                             guild=after.guild,
                             name=f"{self.event_art_contest_name}{winning_theme}",
@@ -374,7 +375,7 @@ class ArtContest(commands.GroupCog, name="art"):
                         await send_winner_voting_form(self, after.guild_id, create_result)
 
                         # Create New Event For Winner Announcement
-                        time = next_weekday(discord.utils.utcnow(), self.event_winner_announcement_time["weekday"]) # Sets the time to coming monday
+                        time = next_weekday(discord.utils.utcnow().astimezone(ZoneInfo(TIME_ZONE)), self.event_winner_announcement_time["weekday"]) # Sets the time to coming monday
                         await create_scheduled_event(
                             guild=after.guild,
                             name=self.event_winner_announcement_name,
