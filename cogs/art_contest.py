@@ -45,6 +45,14 @@ class ArtContest(commands.GroupCog, name="art"):
         channel: discord.ForumChannel = interaction.guild.get_channel(ids_and_theme["art_contest_submissions_channel_id"])
         thread_name = ids_and_theme["art_contest_theme"] +": "+ title +" -" + interaction.user.name
         file: discord.File = await art.to_file() # art attachment to file so it can be send
+
+        # Embed
+        embed = discord.Embed(title="", description="", color=EMBED_COLOR)
+        embed.set_author(name=interaction.user.global_name, icon_url=interaction.user.avatar)
+        embed.add_field(name="Theme:", value=ids_and_theme["art_contest_theme"])
+        embed.add_field(name="Title:", value=title, inline=False)
+        embed.set_footer(text="Last edit")
+        embed.timestamp = discord.utils.utcnow()
         
         current_submissions = await self.bot.pool.fetch(f"""
             SELECT user_id, thread_id, message_id, title FROM art_contest_submissions
@@ -60,10 +68,11 @@ class ArtContest(commands.GroupCog, name="art"):
                     thread = await thread.edit(name=thread_name)
                 else:
                     title = submission["title"]
+                    embed.set_field_at(1, name="Title:", value=title, inline=False)
                 
                 # Edit attachment
                 partial_message = thread.get_partial_message(submission["message_id"])
-                message = await partial_message.edit(attachments=[file])
+                message = await partial_message.edit(attachments=[file], embed=embed)
 
                 # Update values in database
                 await self.bot.pool.execute(f"""
@@ -76,7 +85,7 @@ class ArtContest(commands.GroupCog, name="art"):
                 return
             
         # Create new submission
-        thread = await channel.create_thread(name=thread_name, file=file)
+        thread = await channel.create_thread(name=thread_name, file=file, embed=embed)
         await self.bot.pool.execute(f"""
             INSERT INTO art_contest_submissions
             (guild_id, user_id, thread_id, message_id, form_id, title, image_url)
