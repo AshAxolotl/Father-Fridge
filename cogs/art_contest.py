@@ -7,7 +7,7 @@ from random import choice
 import google_api_stuff as google_api_stuff
 from googleapiclient.errors import HttpError
 from typing import Optional, Literal, Union
-from bot_config import NO_PERMS_MESSAGE, BASE_ART_CONTEST_FORM_ID, TIME_ZONE
+from bot_config import NO_PERMS_MESSAGE, BASE_ART_CONTEST_FORM_ID, TIME_ZONE, EMBED_COLOR
 
 
 # ArtContest Class
@@ -271,7 +271,7 @@ class ArtContest(commands.GroupCog, name="art"):
                             poll_option = suggestion["suggested_theme"]
                             poll_options_text += f"{emoji} {poll_option}\n"
                         
-                        poll_embed = discord.Embed(title="", description=poll_options_text, colour=discord.Colour.dark_gold())
+                        poll_embed = discord.Embed(title="", description=poll_options_text, colour=EMBED_COLOR)
                         poll_embed.set_author(name="Vote for the contest theme!")
 
                         poll_message = await announcements_channel.send(embed=poll_embed, silent=True)
@@ -451,7 +451,7 @@ async def send_theme_suggestions_msg(bot, guild_id: int, channel_id: int) -> int
 
     suggestions_channel = bot.get_partial_messageable(channel_id)
     # Creates a new message for showing suggested themes
-    suggestion_embed = discord.Embed(title="Theme Suggestions", description="Current Suggestions:", colour=discord.Colour.dark_gold())
+    suggestion_embed = discord.Embed(title="Theme Suggestions", description="Current Suggestions:", colour=EMBED_COLOR)
     # suggestion_embed.set_author(name="Theme Suggestions")
     for suggestion in suggestions:
         suggestion_embed.add_field(name=suggestion["suggested_theme"], value=f" -<@{suggestion['user_id']}>", inline=False)
@@ -538,7 +538,7 @@ async def get_results_embed_info(form_id: str, guild_id: int, pool) -> dict:
 async def get_winner_embed(pool, guild_id: int, form_id: str, theme: str, form_url: str):
     winner_embed_info = await get_results_embed_info(form_id=form_id, guild_id=guild_id, pool=pool) # returns a dict with {text: "", "image_url": ""}
         
-    winner_embed = discord.Embed(title="", description=winner_embed_info["text"], colour=discord.Colour.dark_gold())
+    winner_embed = discord.Embed(title="", description=winner_embed_info["text"], colour=EMBED_COLOR)
     winner_embed.set_author(name=f"Voting Results: {theme}", url=form_url)
     winner_embed.set_image(url=winner_embed_info["image_url"])
     winner_embed.set_footer(text="winner(s) shall be put on the fridge in 3-5 business day")

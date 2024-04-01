@@ -17,6 +17,7 @@
    OWNER_USERIDS = {} # Set
    NO_PERMS_MESSAGE = ""
    TIME_ZONE = ""
+   EMBED_COLOR = 0xC27C0E
    
    # Google forms
    BASE_ART_CONTEST_FORM_ID = ""

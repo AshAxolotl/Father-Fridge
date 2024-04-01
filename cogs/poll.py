@@ -4,6 +4,7 @@ from discord.ext import commands
 from typing import Optional
 import datetime
 import time
+from bot_config import EMBED_COLOR
 
 class Poll(commands.Cog):
     def __init__(self, bot: commands.bot) -> None:
@@ -28,7 +29,7 @@ class Poll(commands.Cog):
 
         # view
         embed = discord.Embed(
-        colour=discord.Colour.dark_gold(),
+        colour=EMBED_COLOR,
         title=question,
         description=options_text,
         )

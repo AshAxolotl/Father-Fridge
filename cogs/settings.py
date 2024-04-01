@@ -1,12 +1,12 @@
-import json
 import discord
 from discord import app_commands, ChannelType, ui
 from discord.ext import commands
 from typing import List, Union
+from bot_config import EMBED_COLOR
 
 # BASE MENU seen when using /settings
 baseMenuEmbed = discord.Embed(
-        colour=discord.Colour.dark_gold(),
+        colour=EMBED_COLOR,
         title="Settings: Start Menu",
         description="SETTINGS",
 )
@@ -26,7 +26,7 @@ class BaseMenuView(ui.View):
     async def join_role(self, interaction: discord.Interaction, button: ui.Button):
         role_id = await interaction.client.pool.fetchval(f"SELECT join_role_id FROM settings WHERE guild_id = '{interaction.guild_id}'")
         view = JoinSettingsView(dropdown=[JoinRoleDropdown(self.interaction, role_id)])
-        embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Join Role", description="Set the role that users should get when they join the guild.")
+        embed = discord.Embed(colour=EMBED_COLOR, title="Settings: Join Role", description="Set the role that users should get when they join the guild.")
         await interaction.response.edit_message(view=view, embed=embed)
         self.stop()
 
@@ -35,7 +35,7 @@ class BaseMenuView(ui.View):
     async def quote_channel(self, interaction: discord.Interaction, button: ui.Button):
         quote_channel_id = await interaction.client.pool.fetchval(f"SELECT quote_channel_id FROM settings WHERE guild_id = '{interaction.guild_id}'")
         view = DropdownView(dropdown=[QuoteChannelDropdown(self.interaction, quote_channel_id)])
-        embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Quote Channel", description="Set the channel where quotes will go")
+        embed = discord.Embed(colour=EMBED_COLOR, title="Settings: Quote Channel", description="Set the channel where quotes will go")
         await interaction.response.edit_message(view=view, embed=embed)
         self.stop()
 
@@ -51,7 +51,7 @@ class BaseMenuView(ui.View):
                                       ArtContestThemeSuggestionsDropdown(self.interaction, records["art_contest_theme_suggestion_channel_id"]), 
                                       ArtContestSubmissionsDropdown(self.interaction, records["art_contest_submissions_channel_id"]), 
                                       ArtContestRoleDropdown(self.interaction, records["art_contest_role_id"])])
-        embed = discord.Embed(colour=discord.Colour.dark_gold(), title="Settings: Art Contest", description="Settings for art contest channels and roles")
+        embed = discord.Embed(colour=EMBED_COLOR, title="Settings: Art Contest", description="Settings for art contest channels and roles")
         await interaction.response.edit_message(view=view, embed=embed)
         self.stop()
 
@@ -233,10 +233,3 @@ class Settings(commands.Cog):
 # loading the cog
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Settings(bot))
-
-
-# json write (for cogs)
-def write_json_data(data):
-  data_json = json.dumps(data, indent=4)
-  with open("data.json", "w") as file:
-    file.write(data_json)

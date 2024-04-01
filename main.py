@@ -23,7 +23,7 @@ class CustomCommandTree(app_commands.CommandTree):
     # app command errors
     async def on_error(self, interaction: discord.Interaction[discord.Client], error: app_commands.AppCommandError) -> None:
         if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message(NO_PERMS_MESSAGE, ephemeral=True)
+            await interaction.response.send_message(NO_PERMS_MESSAGE.format(error = error).replace("[", "").replace("]", ""), ephemeral=True)
         else:
             return await super().on_error(interaction, error)
 

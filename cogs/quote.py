@@ -1,7 +1,8 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Optional, Union, Type
+from typing import Optional, Union
+from bot_config import EMBED_COLOR
 
 class Quote(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -21,7 +22,7 @@ class Quote(commands.Cog):
         quote_channel = self.bot.get_partial_messageable(quote_channel_id)
 
         embed = discord.Embed(
-        colour=discord.Colour.dark_gold(),
+        colour=EMBED_COLOR,
         title=text,
         description=""
         )

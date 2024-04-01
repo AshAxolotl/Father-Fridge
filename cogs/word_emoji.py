@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-import json
+from bot_config import EMBED_COLOR
 from typing import Optional
 
 @app_commands.guild_only()
@@ -117,7 +117,7 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
       text += "N/A"
 
     embed = discord.Embed(
-      colour=discord.Colour.dark_gold(),
+      colour=EMBED_COLOR,
       title=title,
       description=text,
     )
