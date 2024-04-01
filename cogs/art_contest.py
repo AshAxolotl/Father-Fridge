@@ -24,7 +24,7 @@ class ArtContest(commands.GroupCog, name="art"):
 
     ## USER COMMANDS
     # Submit Art command
-    @app_commands.command(name="submit", description="submit art for the art contest")
+    @app_commands.command(name="submit", description="Submit art for the art contest")
     async def submit(self, interaction: discord.Interaction, art: discord.Attachment, title: Optional[str] = "N/A"):
 
         ids_and_theme = await self.bot.pool.fetchrow(f"""
@@ -88,7 +88,7 @@ class ArtContest(commands.GroupCog, name="art"):
 
     ## ADMIN COMMANDS
     # create event command
-    @app_commands.command(name="admin", description="(ADMIN ONLY)")
+    @app_commands.command(name="admin", description="Admin commands for managing art contests")
     @app_commands.checks.has_permissions(administrator=True)
     async def admin(self, interaction: discord.Interaction, action: Literal["create_winner_event", "create_theme_event", "create_active_event", "recount_winner", "create_form", "update_form", "start_new"]):
         await interaction.response.defer(ephemeral=True, thinking=True)
@@ -193,7 +193,7 @@ class ArtContest(commands.GroupCog, name="art"):
 
 
     # Remove theme suggestion or remove submission
-    @app_commands.command(name="remove", description="remove a theme suggestion or submission")
+    @app_commands.command(name="remove", description="Remove a theme suggestion or submission")
     async def remove(self, interaction: discord.Interaction, type: Literal["theme_suggestion", "submission"], user: Optional[Union[discord.Member ,discord.User]]):
         if user == None:
             user = interaction.user

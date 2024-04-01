@@ -31,7 +31,7 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
 
   ## COMMANDS
   #word emoji add
-  @app_commands.command(name="add", description="make the bot react with a emoji on a word")
+  @app_commands.command(name="add", description="Make the bot react with a emoji on a word")
   async def wmoji_add(self, interaction:discord.Interaction, word:str, emoji:str):
     word = word.lower()
 
@@ -69,7 +69,7 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
 
 
   #word emoji remove
-  @app_commands.command(name="remove", description="stops the bot from reacting with a emoji on a word")
+  @app_commands.command(name="remove", description="Stops the bot from reacting with a emoji on a word")
   async def wmoji_remove(self, interaction: discord.Interaction, word: str, emoji: Optional[str]):
     word = word.lower()
 
@@ -83,7 +83,7 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
 
 
   #word emoji list
-  @app_commands.command(name="list", description="get a list of wmoji's")
+  @app_commands.command(name="list", description="Get a list of wmoji's")
   async def wmoji_list(self, interaction: discord.Interaction, word: Optional[str]):
     if word == None:
       title = "wmoji: ALL"

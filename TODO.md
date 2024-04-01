@@ -6,7 +6,7 @@ add timestamp to the art contest submissions?
 
 link to discord message in the google form?
 
-color in the bot_config?
+
 
 # random things to look into:
 

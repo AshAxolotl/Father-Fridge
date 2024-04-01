@@ -12,7 +12,7 @@ class ServerName(commands.GroupCog, name="server_name"):
         self.bot = bot
 
     # add
-    @app_commands.command(name="suggest", description="suggest a server name")
+    @app_commands.command(name="suggest", description="Suggest a server name")
     async def suggest(self, interaction: discord.Interaction, text: str):
         await self.bot.pool.execute(f"""
             INSERT INTO server_name_suggestions
@@ -24,14 +24,14 @@ class ServerName(commands.GroupCog, name="server_name"):
         await interaction.response.send_message(f"Your suggestion for this guild has been set to {text}", ephemeral=True)
 
     # remove
-    @app_commands.command(name="remove", description="remove a suggestion")
+    @app_commands.command(name="remove", description="Remove a suggestion")
     @app_commands.checks.has_permissions(administrator=True)
     async def remove(self, interaction: discord.Interaction, suggestion: str):
         await self.bot.pool.execute(f"DELETE FROM server_name_suggestions WHERE name_suggestion = $1 AND guild_id = {interaction.guild_id}", suggestion)
         await interaction.response.send_message(f"Tried to remove all suggestions with the text: {suggestion}", ephemeral=True)
 
     # list
-    @app_commands.command(name="list", description="list all suggestions for this guild")
+    @app_commands.command(name="list", description="List all suggestions for this guild")
     async def list(self, interaction: discord.Interaction):
         text = "list of server name suggestions:\n"
         
@@ -49,7 +49,7 @@ class ServerName(commands.GroupCog, name="server_name"):
 
 
     # create event    
-    @app_commands.command(name="event", description="creates the event")
+    @app_commands.command(name="event", description="Creates the scheduled event")
     @app_commands.checks.has_permissions(administrator=True)
     async def event(self, interaction: discord.Interaction):
         # New scheduled event for server rename                 

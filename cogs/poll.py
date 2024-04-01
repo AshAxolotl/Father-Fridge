@@ -11,7 +11,7 @@ class Poll(commands.Cog):
         self.bot = bot
     
     #poll create
-    @app_commands.command(name="poll", description="basic poll command")
+    @app_commands.command(name="poll", description="Basic poll command")
     async def poll(self, interaction:discord.Interaction, question: str, options: str, unix_endtime: Optional[int] = None):
         
         options = options.split(", ")

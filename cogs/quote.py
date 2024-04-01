@@ -37,7 +37,7 @@ class Quote(commands.Cog):
         await interaction.response.send_message(f"Added quote \"{text}\" by {author} in https://discord.com/channels/{interaction.guild_id}/{quote_channel.id}!", ephemeral=True, suppress_embeds=True)
     
     # Quote
-    @app_commands.command(name="quote", description="make a quote in the quote channel")
+    @app_commands.command(name="quote", description="Make a quote in the quote channel (image and/or text required!) (auther is who said the quote)")
     @app_commands.guild_only()
     async def quote_command(self, interaction: discord.Interaction, author: Union[discord.Member ,discord.User], text: Optional[str], image: Optional[discord.Attachment]):
         if image != None:

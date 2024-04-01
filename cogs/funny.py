@@ -21,7 +21,7 @@ class Funny(commands.Cog):
         await interaction.response.send_message(f"if you want balls just check {interaction.user} browser history")
     
     # echo command
-    @app_commands.command(name="echo", description="make the bot say anything... what could go wrong?")
+    @app_commands.command(name="echo", description="Make the bot say anything... What could go wrong?")
     async def echo(self, interaction: discord.Interaction, text: str):
         await interaction.response.send_message(text)
 

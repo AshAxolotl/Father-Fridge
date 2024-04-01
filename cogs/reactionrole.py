@@ -51,7 +51,7 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
 
     ## COMMANDS
     # reacton role add
-    @app_commands.command(name="add", description="add a reaction role (needs to be used in the channel the msg is in)")
+    @app_commands.command(name="add", description="Add a reaction role (needs to be used in the channel the msg is in)")
     @app_commands.checks.has_permissions(administrator=True)
     async def reaction_role_add(self, interaction:discord.Interaction, message_id: str, emoji: str, role: discord.Role):
         message_id = int(message_id)
@@ -74,7 +74,7 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
         
 
     # reaction role remove
-    @app_commands.command(name="remove", description="remove a reaction role (needs to be used in the channel the msg is in)")
+    @app_commands.command(name="remove", description="Remove a reaction role (needs to be used in the channel the msg is in)")
     @app_commands.checks.has_permissions(administrator=True)
     async def reaction_role_remove(self, interaction:discord.Interaction, message_id: str, emoji: Optional[str]):
         message_id = int(message_id)
@@ -96,7 +96,7 @@ class ReactionRole(commands.GroupCog, name="reactionrole"):
 
     
     # reaction role list TODO this could be imporved by showing what roles every emoji gives
-    @app_commands.command(name="list", description="lists the reaction roles")
+    @app_commands.command(name="list", description="Get a list of all reaction roles")
     @app_commands.checks.has_permissions(administrator=True)
     async def reaction_role_list(self, interaction:discord.Interaction):
         text = "list of reaction roles:\n"

@@ -20,7 +20,7 @@ class Help(commands.Cog):
     def cog_unload(self):
         self.bot.help_command = self._original_help_command
 
-    @app_commands.command(name="help", description="help me I dumb")
+    @app_commands.command(name="help", description="Help me I dumb")
     async def reaction_role_list(self, interaction:discord.Interaction):
 
         embed = discord.Embed(
