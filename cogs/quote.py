@@ -27,8 +27,8 @@ class Quote(commands.Cog):
         description=""
         )
 
-        embed.add_field(name=f"-{author.name}", value="", inline=False)
-        embed.set_footer(text=f"added by {interaction.user.name}")
+        embed.add_field(name="", value=f"-<@{author.id}>", inline=False)
+        embed.set_footer(text=f"added by {interaction.user.global_name}")
         files = []
         for attach in attachments:
                 files.append(await attach.to_file())
