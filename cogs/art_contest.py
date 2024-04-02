@@ -290,6 +290,7 @@ class ArtContest(commands.GroupCog, name="art"):
                             emoji = str(i + 1) + "\ufe0f\u20e3"
                             await poll_message.add_reaction(emoji)
 
+                        await self.bot.pool.execute(f"DELETE FROM art_contest_theme_suggestions WHERE guild_id = {after.guild_id};")
                         
                         # Creates a new message for showing suggested themes
                         suggestions_message_id = await send_theme_suggestions_msg(bot=self.bot, guild_id=after.guild_id, channel_id=ids_and_theme["art_contest_theme_suggestion_channel_id"])
@@ -298,8 +299,6 @@ class ArtContest(commands.GroupCog, name="art"):
                             UPDATE settings
                             SET art_contest_theme_suggestions_message_id = {suggestions_message_id},
                                 art_contest_poll_message_id = {poll_message.id}
-                            WHERE guild_id = {after.guild_id};
-                            DELETE FROM art_contest_theme_suggestions
                             WHERE guild_id = {after.guild_id};
                             """)
 
