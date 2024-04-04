@@ -94,8 +94,14 @@ class ServerName(commands.GroupCog, name="server_name"):
                         SELECT name_suggestion FROM server_name_suggestions
                         WHERE guild_id = {before.guild_id} AND name_suggestion != $1;
                         """, before.guild.name)
-                    
-                        await before.guild.edit(reason="Daily Rename", name="There where no valid suggestions" if len(records) == 0 else choice(records)['name_suggestion'])
+
+                        if len(records) == 0:
+                            name = "There where no valid suggestions"
+                        else:
+                            name = choice(records)['name_suggestion']
+                            await self.bot.pool.execute(f"DELETE FROM server_name_suggestions WHERE guild_id = {before.guild_id} AND name_suggestion = $1", name)
+
+                        await before.guild.edit(reason="Daily Rename", name=name)
 
                         
                         
