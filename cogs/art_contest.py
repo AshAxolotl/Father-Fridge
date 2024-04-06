@@ -15,10 +15,10 @@ from bot_config import NO_PERMS_MESSAGE, BASE_ART_CONTEST_FORM_ID, TIME_ZONE, EM
 class ArtContest(commands.GroupCog, name="art"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.event_theme_announcement_name = "Art Contest: theme announcement"
-        self.event_theme_announcement_time = {"weekday": 1, "hour": 18, "minute": 0}
         self.event_winner_announcement_name = "Art Contest: winner announcement"
         self.event_winner_announcement_time = {"weekday": 0, "hour": 21, "minute": 0}
+        self.event_theme_announcement_name = "Art Contest: theme announcement"
+        self.event_theme_announcement_time = {"weekday": 1, "hour": 18, "minute": 0}
         self.event_art_contest_name = "Art Contest: "
         self.event_art_contest_time = {"weekday": 6, "hour": 23, "minute": 59}
 

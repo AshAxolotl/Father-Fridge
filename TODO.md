@@ -1,5 +1,5 @@
 # TO-DO
-
+let people know when there suggestion for server name gets selected?
 
 # random things to look into:
 

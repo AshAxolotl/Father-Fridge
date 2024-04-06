@@ -1,18 +1,42 @@
+from datetime import datetime
 import discord
 from discord import app_commands, ChannelType, ui
 from discord.ext import commands
-from typing import List, Union
+from typing import Any, List, Union
 from bot_config import EMBED_COLOR
 
-# BASE MENU seen when using /settings
-baseMenuEmbed = discord.Embed(
-        colour=EMBED_COLOR,
-        title="Settings: Start Menu",
-        description="SETTINGS",
-)
 
 
-class BaseMenuView(ui.View):
+## COMMANDS
+# /settings
+class Settings(commands.Cog):
+    def __init__(self, bot: commands.bot) -> None:
+        self.bot = bot
+
+    @app_commands.command(name="settings", description="Bot settings for this guild")
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(administrator=True)
+    async def settings(self, interaction:discord.Interaction):
+        await interaction.response.send_message(embed=MainMenuEmbed(), view=MainMenuView(interaction), ephemeral=True)
+
+
+# Back Button
+class BackButton(ui.Button):
+    def __init__(self):
+        super().__init__(label="Back", style=discord.ButtonStyle.gray, row=4)
+
+    
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.edit_message(view=MainMenuView(interaction), embed=MainMenuEmbed())
+
+# Main Menu Embed
+class MainMenuEmbed(discord.Embed):
+    def __init__(self):
+        super().__init__(colour=EMBED_COLOR, title="Settings: Start Menu", description="SETTINGS")
+    
+
+# Main Menu View
+class MainMenuView(ui.View):
     def __init__(self, interaction: discord.Interaction):
         super().__init__()
         self.interaction = interaction
@@ -25,7 +49,7 @@ class BaseMenuView(ui.View):
     @ui.button(label="Join Settings", style=discord.ButtonStyle.blurple)
     async def join_role(self, interaction: discord.Interaction, button: ui.Button):
         role_id = await interaction.client.pool.fetchval(f"SELECT join_role_id FROM settings WHERE guild_id = '{interaction.guild_id}'")
-        view = JoinSettingsView(dropdown=[JoinRoleDropdown(self.interaction, role_id)])
+        view = DropdownView(dropdown=[JoinRoleDropdown(self.interaction, role_id)])
         embed = discord.Embed(colour=EMBED_COLOR, title="Settings: Join Role", description="Set the role that users should get when they join the guild.")
         await interaction.response.edit_message(view=view, embed=embed)
         self.stop()
@@ -65,28 +89,8 @@ class DropdownView(ui.View):
         # Adds the dropdown to our view object.
         for i in dropdown:
             self.add_item(i)
-    
-    @ui.button(label="Back", style=discord.ButtonStyle.gray, row=4)
-    async def back_button(self, interaction: discord.Interaction, button: ui.button):
-        view = BaseMenuView(interaction)
-        await interaction.response.edit_message(view=view, embed=baseMenuEmbed)
 
-# Join settings view
-class JoinSettingsView(ui.View):
-    def __init__(self, dropdown):
-        super().__init__()
-        # Adds the dropdown to our view object.
-        for i in dropdown:
-            self.add_item(i)
-    
-    @ui.button(label="Back", style=discord.ButtonStyle.gray, row=1)
-    async def back_button(self, interaction: discord.Interaction, button: ui.button):
-        view = BaseMenuView(interaction)
-        await interaction.response.edit_message(view=view, embed=baseMenuEmbed)
-
-
-## BUTTON
-# TODO add the back button here as a class?
+        self.add_item(BackButton())
 
 
 ## DROPDOWNS
@@ -208,25 +212,6 @@ class ArtContestRoleDropdown(ui.RoleSelect):
             WHERE guild_id = {interaction.guild_id}
         """)
         await interaction.response.send_message(f"Successfully set the art contest role to <@&{selected_roles[0].id}>", ephemeral=True)
-
-
-
-## COMMANDS
-# /settings
-class Settings(commands.Cog):
-    def __init__(self, bot: commands.bot) -> None:
-        self.bot = bot
-
-    @app_commands.command(name="settings", description="Bot settings for this guild")
-    @app_commands.guild_only()
-    @app_commands.checks.has_permissions(administrator=True)
-    async def settings(self, interaction:discord.Interaction):
-        # embed
-
-        view = BaseMenuView(interaction)
-
-        
-        await interaction.response.send_message(embed=baseMenuEmbed, view=view, ephemeral=True)
 
 
 
