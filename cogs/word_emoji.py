@@ -26,7 +26,10 @@ class WordEmoji(commands.GroupCog, name="wmoji"):
       """, message.content.lower())
 
       for emoji_record in emojis_records:
-        await message.add_reaction(emoji_record["emoji"])
+        try:
+          await message.add_reaction(emoji_record["emoji"])
+        except discord.HTTPException:
+          pass
       
 
   ## COMMANDS
