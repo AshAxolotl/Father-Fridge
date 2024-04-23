@@ -27,7 +27,7 @@ class OwnerCommands(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def log(self, ctx: commands.Context):
-        log_file = discord.File("discord.log", filename="dicord.log")
+        log_file = discord.File("discord.log", filename="discord.log")
         await ctx.send(f"DEBUG: {DEBUG}",file=log_file)
 
 

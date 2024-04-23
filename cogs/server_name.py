@@ -78,7 +78,7 @@ class ServerName(commands.GroupCog, name="server_name"):
                         # New scheduled event for server rename                 
                         time_now = discord.utils.utcnow().astimezone(ZoneInfo(TIME_ZONE)) + timedelta(days=1)
                         time_start = time_now.replace(hour=23, minute=59, second=0)
-                        time_end = time_now.replace(hour=23, minute=59, second=1)
+                        time_end = time_now.replace(hour=23, minute=59, second=5)
 
                         await before.guild.create_scheduled_event(
                         name="Daily Server Rename",

@@ -112,7 +112,7 @@ class ArtContest(commands.GroupCog, name="art"):
                 guild=interaction.guild,
                 name=self.event_theme_announcement_name,
                 time_start=time.replace(hour=self.event_theme_announcement_time["hour"], minute=self.event_theme_announcement_time["minute"], second=0),
-                time_end=time.replace(hour=self.event_theme_announcement_time["hour"], minute=self.event_theme_announcement_time["minute"], second=1),
+                time_end=time.replace(hour=self.event_theme_announcement_time["hour"], minute=self.event_theme_announcement_time["minute"], second=5),
                 description="Vote on the theme for the upcoming art contest!\n(made using command)",
                 locaction=f"https://discord.com/channels/{interaction.guild_id}/{channel_id}"
             )
@@ -144,7 +144,7 @@ class ArtContest(commands.GroupCog, name="art"):
                 guild=interaction.guild,
                 name=self.event_winner_announcement_name,
                 time_start=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=0),
-                time_end=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=1),
+                time_end=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=5),
                 description="Vote on the art contest winner!\n(made using command)",
                 locaction=form_url
             )
@@ -183,7 +183,7 @@ class ArtContest(commands.GroupCog, name="art"):
                 guild=interaction.guild,
                 name=self.event_winner_announcement_name,
                 time_start=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=0),
-                time_end=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=1),
+                time_end=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=5),
                 description="There wont really be a winner since there hasnt been a (new) art contest before this.\npls submit your theme ideas!",
                 locaction=f"https://discord.com/channels/{interaction.guild_id}/{channel_ids['art_contest_theme_suggestion_channel_id']}"
             )
@@ -308,7 +308,7 @@ class ArtContest(commands.GroupCog, name="art"):
                             guild=after.guild,
                             name=self.event_theme_announcement_name,
                             time_start=time.replace(hour=self.event_theme_announcement_time["hour"], minute=self.event_theme_announcement_time["minute"], second=0),
-                            time_end=time.replace(hour=self.event_theme_announcement_time["hour"], minute=self.event_theme_announcement_time["minute"], second=1),
+                            time_end=time.replace(hour=self.event_theme_announcement_time["hour"], minute=self.event_theme_announcement_time["minute"], second=5),
                             description="Vote on the theme for the upcoming art contest!",
                             locaction=f"https://discord.com/channels/{after.guild_id}/{ids_and_theme['art_contest_announcements_channel_id']}"
                         )
@@ -388,7 +388,7 @@ class ArtContest(commands.GroupCog, name="art"):
                             guild=after.guild,
                             name=self.event_winner_announcement_name,
                             time_start=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=0),
-                            time_end=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=1),
+                            time_end=time.replace(hour=self.event_winner_announcement_time["hour"], minute=self.event_winner_announcement_time["minute"], second=5),
                             description="Vote on the art contest winner!",
                             locaction=create_result["responderUri"]
                         )
@@ -503,7 +503,9 @@ async def get_results_embed_info(form_id: str, guild_id: int, pool) -> dict:
     
     if "responses" not in results:
         return {"text": "there where no responses to the form :(", "image_url": ""}
-
+    
+    if "0000000a" not in results["responses"][0]["answers"]:
+        return {"text": "there was a error getting the form votes :(", "image_url": ""}
 
     # get submissions
     submissions_records = await pool.fetch(f"""
