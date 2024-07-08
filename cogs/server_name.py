@@ -14,14 +14,17 @@ class ServerName(commands.GroupCog, name="server_name"):
     # add
     @app_commands.command(name="suggest", description="Suggest a server name")
     async def suggest(self, interaction: discord.Interaction, text: str):
-        await self.bot.pool.execute(f"""
+        if len(text) >= 100:
+            await interaction.response.send_message(f"Your suggestion \"{text}\" could not be added since it is over 100 characters", ephemeral=True)
+        else:
+            await self.bot.pool.execute(f"""
             INSERT INTO server_name_suggestions
             (guild_id, user_id, name_suggestion)
             VALUES ({interaction.guild_id}, {interaction.user.id}, $1)
             ON CONFLICT (guild_id, user_id) DO
                 UPDATE SET name_suggestion = EXCLUDED.name_suggestion;
-        """, text)
-        await interaction.response.send_message(f"Your suggestion for this guild has been set to {text}", ephemeral=True)
+            """, text)
+            await interaction.response.send_message(f"Your suggestion for this guild has been set to {text}", ephemeral=True)
 
     # remove
     @app_commands.command(name="remove", description="Remove a suggestion")
