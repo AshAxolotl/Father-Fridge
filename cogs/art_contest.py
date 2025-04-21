@@ -497,15 +497,15 @@ async def get_results_embed_info(form_id: str, guild_id: int, pool) -> dict:
     except HttpError as error:
         print(f"The Form for winner could not be found: {error}")
         return {"text": "there was a error getting the form votes :(", "image_url": ""}
-    except:
-        print(f"unknown error with getting for data for winning announcement")
+    except Exception as error:
+        print(f"unknown error with getting for data for winning announcement: {error}")
         return {"text": "there was a error getting the form votes :(", "image_url": ""}
     
     if "responses" not in results:
         return {"text": "there where no responses to the form :(", "image_url": ""}
-    
-    if "0000000a" not in results["responses"][0]["answers"]:
-        return {"text": "there was a error getting the form votes :(", "image_url": ""}
+
+    # if "0000000b" not in results["responses"][0]["answers"]:
+    #     return {"text": "there was a error getting the form votes :(", "image_url": ""}
 
     # get submissions
     submissions_records = await pool.fetch(f"""
