@@ -589,7 +589,7 @@ async def create_form(pool, guild: discord.Guild) -> dict:
 # update form
 async def update_form(pool, form_id, theme: str, guild: discord.Guild) -> dict:
     submissions = await pool.fetch(f"""
-        SELECT user_id, form_id, title, image_url FROM art_contest_submissions
+        SELECT user_id, form_id, title, thread_id, message_id FROM art_contest_submissions
         WHERE guild_id = {guild.id}
     """)
     try: 
@@ -632,6 +632,12 @@ async def update_form(pool, form_id, theme: str, guild: discord.Guild) -> dict:
             username = discord.utils.get(guild.members, id=submission["user_id"])
             title = submission["title"]
             id = submission["form_id"]
+            thread = guild.get_thread(submission["thread_id"])
+            # print(thread)
+            message = await thread.fetch_message(submission["message_id"])
+            # print(message)
+            image_link = message.attachments[0].url
+            # print(image_link)
             form_update["requests"].append(
                         {
                     "createItem": {
@@ -640,7 +646,7 @@ async def update_form(pool, form_id, theme: str, guild: discord.Guild) -> dict:
                             "itemId": f"{id}a",
                             "questionGroupItem": {
                                 "image": {
-                                    "sourceUri": submission["image_url"],
+                                    "sourceUri": image_link,
                                 },
                                 "grid": {
                                     "columns": {
@@ -683,8 +689,8 @@ async def update_form(pool, form_id, theme: str, guild: discord.Guild) -> dict:
     except HttpError as error:
         print(f"An error occurred while updating the form: {error}")
         return {"formId": "ERROR", "responderUri": "https://docs.google.com/forms/d/e/ERROR/viewform"}
-    except:
-        print("An unknown error occurred while updating the form")
+    except Exception as error:
+        print(f"An unknown error occurred while updating the form: {error}")
         return {"formId": "ERROR", "responderUri": "https://docs.google.com/forms/d/e/ERROR/viewform"}
 
 # set up cog

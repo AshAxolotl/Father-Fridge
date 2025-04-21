@@ -9,7 +9,8 @@ google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
 
-# Discordpy 
+# Discordpy
+audioop-lts
 discord.py
 
 # Other
